@@ -1,3 +1,7 @@
 requests>=2.28.0
 playwright>=1.40.0
 python-dotenv>=1.0.0
+
+# For MCP agent example (05_mcp_agent.py)
+llama-index-tools-brightdata>=0.1.0
+llama-index-llms-openai>=0.1.0

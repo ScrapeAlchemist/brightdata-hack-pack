@@ -31,8 +31,8 @@ def scrape(urls: list[str], format: str = "json") -> dict:
         },
         params={"dataset_id": DATASET_ID, "format": format},
         json=[{"url": url} for url in urls],
+        timeout=120,
     )
-    response.raise_for_status()
 
     if response.status_code == 200:
         return response.json()
@@ -44,6 +44,7 @@ def scrape(urls: list[str], format: str = "json") -> dict:
         print(f"Poll with: GET https://api.brightdata.com/datasets/v3/progress/{data['snapshot_id']}")
         return data
 
+    response.raise_for_status()
     return response.json()
 
 

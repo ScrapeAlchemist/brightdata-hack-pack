@@ -38,6 +38,7 @@ def search_google(query: str, num_results: int = 10) -> str:
             "url": search_url,
             "format": "raw",
         },
+        timeout=60,
     )
     response.raise_for_status()
     return response.text
@@ -58,6 +59,7 @@ def search_google_parsed(query: str, num_results: int = 10) -> dict:
             "url": search_url,
             "format": "json",
         },
+        timeout=60,
     )
     response.raise_for_status()
     return response.json()

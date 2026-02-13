@@ -35,6 +35,7 @@ def unlock_url(url: str) -> str:
             "url": url,
             "format": "raw",
         },
+        timeout=60,
     )
     response.raise_for_status()
     return response.text
@@ -46,7 +47,7 @@ def unlock_url_via_proxy(url: str, customer_id: str, zone: str, password: str) -
     response = requests.get(
         url,
         proxies={"http": proxy, "https": proxy},
-        verify=False,
+        timeout=60,
     )
     response.raise_for_status()
     return response.text

@@ -7,9 +7,12 @@
     "scraper": "node 01_web_scraper_api.js",
     "serp": "node 02_serp_api.js",
     "browser": "node 03_scraping_browser.js",
-    "unlocker": "node 04_web_unlocker.js"
+    "unlocker": "node 04_web_unlocker.js",
+    "mcp": "node 05_mcp_agent.js"
   },
   "dependencies": {
-    "puppeteer-core": "^23.0.0"
+    "puppeteer-core": "^23.0.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@brightdata/mcp": "^1.0.0"
   }
 }
