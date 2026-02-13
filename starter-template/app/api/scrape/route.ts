@@ -11,10 +11,28 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { url } = await request.json();
+  let body: { url?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const { url } = body;
 
   if (!url || typeof url !== "string") {
     return NextResponse.json({ error: "URL is required" }, { status: 400 });
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return NextResponse.json({ error: "Invalid URL format" }, { status: 400 });
+  }
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    return NextResponse.json({ error: "Only HTTP and HTTPS URLs are supported" }, { status: 400 });
   }
 
   try {

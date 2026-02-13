@@ -21,7 +21,7 @@ import requests
 API_KEY = os.environ["BRIGHTDATA_API_KEY"]
 DATASET_ID = os.environ.get("BRIGHTDATA_DATASET_ID", "gd_l1viktl72bvl7bjuj0")  # Example: Amazon products
 
-def scrape(urls: list[str], format: str = "json") -> dict:
+def scrape(urls: list[str], output_format: str = "json") -> dict:
     """Scrape structured data from one or more URLs."""
     response = requests.post(
         "https://api.brightdata.com/datasets/v3/scrape",
@@ -29,7 +29,7 @@ def scrape(urls: list[str], format: str = "json") -> dict:
             "Authorization": f"Bearer {API_KEY}",
             "Content-Type": "application/json",
         },
-        params={"dataset_id": DATASET_ID, "format": format},
+        params={"dataset_id": DATASET_ID, "format": output_format},
         json=[{"url": url} for url in urls],
         timeout=120,
     )

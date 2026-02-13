@@ -28,6 +28,12 @@ input[type="url"] {
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 1rem;
+  transition: border-color 0.15s;
+}
+
+input[type="url"]:focus {
+  outline: none;
+  border-color: #4f46e5;
 }
 
 button {
@@ -38,6 +44,7 @@ button {
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 button:hover {

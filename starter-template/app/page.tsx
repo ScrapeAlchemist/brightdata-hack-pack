@@ -1,6 +1,5 @@
 "use client";
 
-import "./globals.css";
 import { useState } from "react";
 
 export default function Home() {
