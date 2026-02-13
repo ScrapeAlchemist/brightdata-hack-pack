@@ -15,6 +15,7 @@
   <a href="#products">Products</a> •
   <a href="#code-examples">Examples</a> •
   <a href="#built-with-bright-data">Showcase</a> •
+  <a href="#prize-track">Prize Track</a> •
   <a href="#need-help">Help</a>
 </p>
 
