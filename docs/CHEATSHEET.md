@@ -16,6 +16,23 @@ Get your API key: [brightdata.com/cp/setting/users](https://brightdata.com/cp/se
 
 ---
 
+## What's a Zone?
+
+A **zone** is a configured instance of a Bright Data product — think of it as a named access point with its own settings and credentials. Every API call requires a zone name to tell Bright Data which product to route through.
+
+| Product | Zone Example | Where It's Used |
+|---------|-------------|-----------------|
+| Web Unlocker | `web_unlocker1` | `"zone"` field in API request body |
+| SERP API | `serp_api1` | `"zone"` field in API request body |
+| Web Scraper API | *(uses `dataset_id` instead)* | `dataset_id` query parameter |
+| Scraping Browser | `scraping_browser1` | Embedded in WebSocket username |
+
+**Find your zones:** [brightdata.com/cp/zones](https://brightdata.com/cp/zones)
+
+Each zone shows its **name**, **type**, and **credentials**. For Scraping Browser, you'll also need the **username** and **password** from the zone's Overview tab.
+
+---
+
 ## Endpoints at a Glance
 
 | Product | Endpoint | Method |

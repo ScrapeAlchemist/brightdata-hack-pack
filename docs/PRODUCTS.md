@@ -1,5 +1,19 @@
 # Which Bright Data Product Should I Use?
 
+## Zones — The Key Concept
+
+Before diving into products, understand **zones**. A zone is a configured instance of a Bright Data product. When you create a Web Unlocker zone, you get a zone name like `web_unlocker1` — that's what you pass in every API call to tell Bright Data which product to use.
+
+**How to set up a zone:**
+1. Go to [brightdata.com/cp/zones](https://brightdata.com/cp/zones)
+2. Click **Add Zone** and pick the product type
+3. Give it a name (or use the auto-generated one)
+4. Copy the zone name into your environment variables or code
+
+> **Hackathon shortcut:** Default zones are usually created when you sign up. Check your [control panel](https://brightdata.com/cp/zones) — you may already have `web_unlocker1` and `serp_api1` ready to go.
+
+---
+
 ## Quick Decision Tree
 
 ```

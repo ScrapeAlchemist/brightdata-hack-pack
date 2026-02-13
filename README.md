@@ -43,13 +43,26 @@ Bright Data gives you tools to **collect data from any website** without getting
 
 Go to [brightdata.com/cp/setting/users](https://brightdata.com/cp/setting/users) and copy your API key.
 
-### 2. Set your environment variable
+### 2. Know your zones
+
+A **zone** is a configured instance of a Bright Data product. Think of it as a named access point — each product (Web Unlocker, SERP API, Scraping Browser) gets its own zone with its own credentials and settings.
+
+- Find your zones at [brightdata.com/cp/zones](https://brightdata.com/cp/zones)
+- Each zone has a **name** (e.g., `web_unlocker1`, `serp_api1`) that you pass in API calls
+- Scraping Browser zones also have a **username** and **password** (used for WebSocket auth)
+- When you sign up, default zones are created for you — check your control panel
+
+### 3. Set your environment variables
 
 ```bash
 export BRIGHTDATA_API_KEY="your_api_key_here"
+
+# Zone names — find yours at brightdata.com/cp/zones
+export BRIGHTDATA_UNLOCKER_ZONE="web_unlocker1"     # Web Unlocker zone
+export BRIGHTDATA_SERP_ZONE="serp_api1"              # SERP API zone
 ```
 
-### 3. Scrape something
+### 4. Scrape something
 
 **Python:**
 ```python
