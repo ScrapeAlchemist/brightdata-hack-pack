@@ -1,0 +1,15 @@
+{
+  "name": "brightdata-examples",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Bright Data API code examples for hackathons",
+  "scripts": {
+    "scraper": "node 01_web_scraper_api.js",
+    "serp": "node 02_serp_api.js",
+    "browser": "node 03_scraping_browser.js",
+    "unlocker": "node 04_web_unlocker.js"
+  },
+  "dependencies": {
+    "puppeteer-core": "^23.0.0"
+  }
+}
