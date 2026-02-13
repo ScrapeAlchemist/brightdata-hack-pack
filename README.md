@@ -314,6 +314,37 @@ Need inspiration? We've got 20+ ideas organized by hackathon track:
 
 ---
 
+## Prize Track
+
+### Prizes
+
+| Winner | Amazon Gift Card | Bright Data Credits |
+|--------|-----------------|---------------------|
+| 1st | $500 | $1,500 |
+| 2nd | $350 | $1,000 |
+| 3rd | $250 | $500 |
+
+### Judging Criteria
+
+| Criteria | Description | Weight |
+|----------|-------------|--------|
+| **Technical Execution** | | **30%** |
+| Functionality | Does the project perform seamlessly with Bright Data technologies and execute its intended functions? | |
+| Innovation | Does the project introduce or utilize technology in new and creative ways? | |
+| Scalability | Is the solution designed to grow and adapt to larger loads or functionalities? | |
+| **Originality and Creativity** | | **30%** |
+| Idea | Is the project concept pioneering or offering a new perspective within Bright Data's focus area? | |
+| Impact | How well does the solution address key challenges or needs, potentially transforming industries or practices? | |
+| User Experience | Does the project provide an intuitive, seamless, and engaging experience for users? | |
+| **Code Quality** | | **10%** |
+| Cleanliness | Is the code well-structured and adhering to standard practices, making it readable and understandable? | |
+| Maintainability | Is the solution designed for easy maintenance and future enhancements? | |
+| **Integration of Multiple Products (Bonus)** | | **30%** |
+| Diversity of Use | Does it demonstrate effective use of multiple Bright Data products or services? | |
+| Complexity | Does the integration enhance the complexity and value of the solution? | |
+
+---
+
 ## Need Help?
 
 - **Find me at the Bright Data booth** — I'm here to help you win
