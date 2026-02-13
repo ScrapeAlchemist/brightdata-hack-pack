@@ -197,7 +197,13 @@ Ready-to-run scripts in Python and JavaScript. Copy, paste, run.
 
 ```bash
 cd examples/python
-pip install -r requirements.txt
+pip install -r requirements.txt    # Installs all deps (including MCP agent)
+export BRIGHTDATA_API_KEY="your_key"
+export BRIGHTDATA_UNLOCKER_ZONE="web_unlocker1"
+python 04_web_unlocker.py          # Try the simplest example first
+
+# For the MCP agent (05), you also need:
+export OPENAI_API_KEY="your_openai_key"
 python 05_mcp_agent.py
 ```
 
@@ -214,7 +220,9 @@ python 05_mcp_agent.py
 ```bash
 cd examples/javascript
 npm install
-node 05_mcp_agent.js
+export BRIGHTDATA_API_KEY="your_key"
+export BRIGHTDATA_UNLOCKER_ZONE="web_unlocker1"
+node 04_web_unlocker.js             # Try the simplest example first
 ```
 
 ### Python SDK (Even Simpler)
