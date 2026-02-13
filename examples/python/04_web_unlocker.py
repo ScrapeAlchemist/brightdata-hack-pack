@@ -41,12 +41,21 @@ def unlock_url(url: str) -> str:
     return response.text
 
 
-def unlock_url_via_proxy(url: str, customer_id: str, zone: str, password: str) -> str:
-    """Alternative: access via proxy endpoint (useful for existing HTTP clients)."""
+def unlock_url_via_proxy(
+    url: str, customer_id: str, zone: str, password: str, ca_cert_path: str = None
+) -> str:
+    """Alternative: access via proxy endpoint (useful for existing HTTP clients).
+
+    For HTTPS targets, you need Bright Data's SSL certificate:
+      Download: https://brightdata.com/static/brightdata_proxy_ca.zip
+      Pass the path to ca.crt as ca_cert_path, or install it system-wide.
+      See docs/TROUBLESHOOTING.md for details.
+    """
     proxy = f"http://brd-customer-{customer_id}-zone-{zone}:{password}@brd.superproxy.io:33335"
     response = requests.get(
         url,
         proxies={"http": proxy, "https": proxy},
+        verify=ca_cert_path if ca_cert_path else True,
         timeout=60,
     )
     response.raise_for_status()

@@ -88,7 +88,71 @@ const puppeteer = require("puppeteer");
 
 ---
 
-## 6. Rate Limiting
+## 6. SSL Certificate Errors (Proxy Mode Only)
+
+**Symptom:** `SSLError`, `CERTIFICATE_VERIFY_FAILED`, or `unable to get local issuer certificate` when using the **proxy endpoint** (`brd.superproxy.io:33335`)
+
+> **Note:** This only applies if you're using the proxy interface. The REST API (`api.brightdata.com/request`) does NOT require any SSL certificate setup.
+
+**Why it happens:** When routing HTTPS traffic through Bright Data's proxy, the proxy terminates and re-encrypts the SSL connection. Your client needs to trust Bright Data's CA certificate.
+
+**Option 1: Load the certificate in your code (Recommended)**
+
+Download the certificate: [brightdata.com/static/brightdata_proxy_ca.zip](https://brightdata.com/static/brightdata_proxy_ca.zip)
+
+Unzip it and use the new certificate file (`ca.crt`).
+
+```python
+# Python — pass the cert path to requests
+import requests
+
+proxy = "http://brd-customer-ID-zone-NAME:PASS@brd.superproxy.io:33335"
+response = requests.get(
+    "https://example.com",
+    proxies={"http": proxy, "https": proxy},
+    verify="/path/to/ca.crt",  # Point to the downloaded certificate
+)
+```
+
+```bash
+# cURL — use --cacert flag
+curl --proxy brd.superproxy.io:33335 \
+  --proxy-user brd-customer-ID-zone-NAME:PASS \
+  --cacert /path/to/ca.crt \
+  "https://example.com"
+```
+
+**Option 2: Install the certificate system-wide**
+
+| Platform | Steps |
+|----------|-------|
+| **Windows** | Double-click `ca.crt` → Install Certificate → Trusted Root Authorities → Reboot |
+| **macOS** | Double-click `ca.crt` → Keychain Access → Set to "Always Trust" |
+| **Linux** | Copy to `/usr/local/share/ca-certificates/` → Run `sudo update-ca-certificates` |
+
+**Option 3: Skip SSL verification (Hackathon shortcut only)**
+
+Not recommended for production, but fine during a hackathon:
+
+```python
+# Python — disable verification
+response = requests.get(url, proxies=proxies, verify=False)
+
+# Suppress the warning
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+```
+
+```bash
+# cURL
+curl -k --proxy brd.superproxy.io:33335 ...
+```
+
+**Best approach for hackathons:** Use the REST API (`api.brightdata.com/request`) instead of the proxy — it doesn't need any SSL certificate setup.
+
+---
+
+## 7. Rate Limiting
 
 **Symptom:** `429 Too Many Requests`
 

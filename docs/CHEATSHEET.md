@@ -63,9 +63,10 @@ curl -X POST "https://api.brightdata.com/request" \
   -d '{"zone": "ZONE_NAME", "url": "https://target.com", "format": "raw"}'
 ```
 
-**Or via proxy:**
+**Or via proxy** (requires [SSL certificate](https://brightdata.com/static/brightdata_proxy_ca.zip) for HTTPS targets):
 ```bash
-curl -x "http://brd-customer-ID-zone-NAME:PASS@brd.superproxy.io:33335" "https://target.com"
+curl -x "http://brd-customer-ID-zone-NAME:PASS@brd.superproxy.io:33335" \
+  --cacert /path/to/ca.crt "https://target.com"
 ```
 
 ---
