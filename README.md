@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://brightdata.com/wp-content/uploads/2024/02/Bright-Data-Logo.svg" alt="Bright Data" width="300">
+  <img src="https://github.com/user-attachments/assets/c21b3f7b-7ff1-40c3-b3d8-66706913d62f" alt="Bright Data" width="300">
 </p>
 
 <h1 align="center">Bright Data Hackathon Kit</h1>
