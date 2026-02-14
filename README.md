@@ -325,6 +325,8 @@ Need inspiration? We've got 20+ ideas organized by hackathon track:
 | 2nd | $350 | $1,000 |
 | 3rd | $250 | $500 |
 
+**Bonus: Get $50 in free Bright Data credits** when you [sign up with this link](https://brightdata.com/?utm_source=brand&utm_campaign=brnd-mkt_hackathon_treehack26&hs_signup=1).
+
 ### Judging Criteria
 
 | Criteria | Description | Weight |
