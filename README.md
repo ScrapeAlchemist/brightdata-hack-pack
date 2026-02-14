@@ -10,6 +10,10 @@
 </p>
 
 <p align="center">
+  <a href="https://brightdata.com/?utm_source=brand&utm_campaign=brnd-mkt_hackathon_treehack26&hs_signup=1"><strong>Sign up now and get $50 in free Bright Data credits →</strong></a>
+</p>
+
+<p align="center">
   <a href="#get-started-in-60-seconds">Quick Start</a> •
   <a href="#mcp--ai-agents">MCP & Agents</a> •
   <a href="#products">Products</a> •
@@ -324,8 +328,6 @@ Need inspiration? We've got 20+ ideas organized by hackathon track:
 | 1st | $500 | $1,500 |
 | 2nd | $350 | $1,000 |
 | 3rd | $250 | $500 |
-
-**Bonus: Get $50 in free Bright Data credits** when you [sign up with this link](https://brightdata.com/?utm_source=brand&utm_campaign=brnd-mkt_hackathon_treehack26&hs_signup=1).
 
 ### Judging Criteria
 
