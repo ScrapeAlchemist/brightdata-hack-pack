@@ -166,5 +166,5 @@ curl -k --proxy brd.superproxy.io:33335 ...
 ## Still Stuck?
 
 - Check the [official docs](https://docs.brightdata.com)
-- Find me at the Bright Data booth
+- **Reach out on LinkedIn** — [![LinkedIn](https://img.shields.io/badge/LinkedIn-Rafael_Levi-blue?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rafael-levi/)
 - Open an issue on this repo
