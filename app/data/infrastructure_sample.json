@@ -1,0 +1,110 @@
+[
+  {
+    "id": "INF-001",
+    "name": "Court St Water Main Upgrade",
+    "lat": 32.3756,
+    "lng": -86.298,
+    "type": "Water",
+    "status": "active",
+    "description": "Replacing 1960s cast-iron water main along Court St corridor. Serves 3 redevelopment parcels."
+  },
+  {
+    "id": "INF-002",
+    "name": "Madison Ave Resurfacing",
+    "lat": 32.3847,
+    "lng": -86.3089,
+    "type": "Road",
+    "status": "active",
+    "description": "Full-depth road resurfacing and ADA ramp upgrades. Enables development access for MGM-V003."
+  },
+  {
+    "id": "INF-003",
+    "name": "Maxwell Blvd Bridge Repair",
+    "lat": 32.3723,
+    "lng": -86.3289,
+    "type": "Bridge",
+    "status": "planned",
+    "description": "Load-rated bridge deck replacement. Critical for west corridor freight access."
+  },
+  {
+    "id": "INF-004",
+    "name": "Mobile Rd Sidewalk Extension",
+    "lat": 32.359,
+    "lng": -86.3245,
+    "type": "Pedestrian",
+    "status": "active",
+    "description": "1.2-mile sidewalk gap closure connecting residential areas to transit corridor."
+  },
+  {
+    "id": "INF-005",
+    "name": "Ann St Sewer Separation",
+    "lat": 32.3768,
+    "lng": -86.3156,
+    "type": "Sewer",
+    "status": "active",
+    "description": "Combined sewer overflow separation project. Required before residential development can proceed."
+  },
+  {
+    "id": "INF-006",
+    "name": "Lincoln Heights Fiber Expansion",
+    "lat": 32.389,
+    "lng": -86.282,
+    "type": "Broadband",
+    "status": "active",
+    "description": "Municipal fiber to underserved Lincoln Heights. Pairs with MGM-V001 park/housing proposal."
+  },
+  {
+    "id": "INF-007",
+    "name": "Riverdale Stormwater Basin",
+    "lat": 32.3654,
+    "lng": -86.2645,
+    "type": "Stormwater",
+    "status": "planned",
+    "description": "Regional detention basin to manage flooding along Riverdale corridor. Enables wetlands park."
+  },
+  {
+    "id": "INF-008",
+    "name": "West End Utility Upgrade",
+    "lat": 32.3723,
+    "lng": -86.3312,
+    "type": "Utility",
+    "status": "planned",
+    "description": "Combined electric, gas, and water upgrade for West End corridor. Paired with MGM-V006 development."
+  },
+  {
+    "id": "INF-009",
+    "name": "Highland Ave Road Grant",
+    "lat": 32.3578,
+    "lng": -86.2834,
+    "type": "Road",
+    "status": "completed",
+    "description": "CDBG-funded road improvement project completed Q2 2024. Sidewalk phase pending."
+  },
+  {
+    "id": "INF-010",
+    "name": "Eastern Blvd Transit Stop",
+    "lat": 32.3634,
+    "lng": -86.2189,
+    "type": "Transit",
+    "status": "completed",
+    "description": "ADA-compliant transit shelter and bus pad installed. Ridership +22% since completion."
+  },
+  {
+    "id": "INF-011",
+    "name": "Bell St Fiber + Water (2023)",
+    "lat": 32.3812,
+    "lng": -86.3134,
+    "type": "Broadband",
+    "status": "completed",
+    "description": "Fiber and water main upgraded 2023. Enables mixed-use redevelopment of Bell St warehouse row."
+  },
+  {
+    "id": "INF-012",
+    "name": "S Perry St Sewer Replacement",
+    "lat": 32.369,
+    "lng": -86.3034,
+    "type": "Sewer",
+    "status": "completed",
+    "description": "Aging clay sewer replaced with PVC in 2022. Parcel MGM-V008 now permit-ready."
+  }
+]

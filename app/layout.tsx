@@ -2,15 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Bright Data Hackathon Starter",
-  description: "Scrape any website with Bright Data",
+  title: "RevitaVibe Montgomery — AI Civic Land Intelligence Platform",
+  description: "Turning vacant land into opportunity for parks, housing, and stronger neighborhoods in Montgomery, AL",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>{children}</body>

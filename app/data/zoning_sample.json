@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ZN-001",
+    "name": "Downtown CBD Zone",
+    "lat": 32.3778,
+    "lng": -86.3003,
+    "zone_code": "CBD",
+    "zone_type": "Central Business District",
+    "compatibility": "high",
+    "notes": "Highest density allowed. Mixed-use, residential, commercial all permitted."
+  },
+  {
+    "id": "ZN-002",
+    "name": "West End Residential R-2",
+    "lat": 32.3723,
+    "lng": -86.3312,
+    "zone_code": "R-2",
+    "zone_type": "Medium Density Residential",
+    "compatibility": "high",
+    "notes": "Allows duplexes and small apartment buildings. Good for infill housing."
+  },
+  {
+    "id": "ZN-003",
+    "name": "Lincoln Heights R-2 Block",
+    "lat": 32.389,
+    "lng": -86.282,
+    "zone_code": "R-2",
+    "zone_type": "Medium Density Residential",
+    "compatibility": "high",
+    "notes": "Suitable for park conversion or community housing development."
+  },
+  {
+    "id": "ZN-004",
+    "name": "Midtown Light Industrial M-1",
+    "lat": 32.3801,
+    "lng": -86.3067,
+    "zone_code": "M-1",
+    "zone_type": "Light Industrial",
+    "compatibility": "medium",
+    "notes": "Requires rezoning for residential use. Compatible with maker spaces and mixed commercial."
+  },
+  {
+    "id": "ZN-005",
+    "name": "Capitol Heights R-2",
+    "lat": 32.3812,
+    "lng": -86.2934,
+    "zone_code": "R-2",
+    "zone_type": "Medium Density Residential",
+    "compatibility": "high",
+    "notes": "Established residential zone. Infill opportunities available."
+  },
+  {
+    "id": "ZN-006",
+    "name": "South Montgomery Agricultural",
+    "lat": 32.3478,
+    "lng": -86.3167,
+    "zone_code": "AG",
+    "zone_type": "Agricultural",
+    "compatibility": "low",
+    "notes": "Limited urban development potential. Urban farming or greenway feasible."
+  },
+  {
+    "id": "ZN-007",
+    "name": "Mobile Rd Commercial B-2",
+    "lat": 32.359,
+    "lng": -86.3245,
+    "zone_code": "B-2",
+    "zone_type": "General Commercial",
+    "compatibility": "high",
+    "notes": "Transit-oriented development highly compatible. Mixed-use incentives available."
+  },
+  {
+    "id": "ZN-008",
+    "name": "Riverdale Agricultural Fringe",
+    "lat": 32.3654,
+    "lng": -86.2645,
+    "zone_code": "AG",
+    "zone_type": "Agricultural",
+    "compatibility": "medium",
+    "notes": "Flood zone overlay. Wetlands park or greenway trail best use."
+  }
+]

@@ -1,43 +1,75 @@
-# Bright Data Hackathon Starter
+# RevitaVibe Montgomery — AI Civic Land Intelligence Platform
 
-A Next.js web scraper powered by Bright Data's Web Unlocker API. Enter a URL and get back the full HTML content of any webpage.
+A hackathon MVP civic planning dashboard built on Next.js 15. Transforms the Bright Data hackathon starter into a polished, demoable product for city planners and mayors.
+
+## What It Does
+
+Interactive single-page dashboard for Montgomery, AL that identifies vacant land redevelopment opportunities, visualizes infrastructure projects, and answers urban planning questions via an AI Copilot.
 
 ## Architecture
 
 - **Framework**: Next.js 15 (App Router) with TypeScript
-- **Frontend**: React 19 client component (`app/page.tsx`)
-- **Backend**: Next.js API route (`app/api/scrape/route.ts`) — API key stays server-side, never exposed to the browser
+- **Map**: Leaflet + custom Leaflet imperative hooks (`app/components/CityMap.tsx`) — dynamically imported with `ssr: false`
+- **Data**: Local JSON sample datasets (20 parcels, 12 infra projects, 8 zones) — swappable with real GIS data
+- **Scoring**: Weighted opportunity score (vacancy 40%, zoning 25%, infra 20%, permit inactivity 15%) in `app/lib/scoring.ts`
+- **Copilot**: Deterministic keyword-matching logic in `app/lib/copilot.ts` — upgrades to OpenAI if `OPENAI_API_KEY` set
+- **MCP**: Bright Data enrichment stub in `app/lib/mcpClient.ts` + `app/lib/enrichment.ts` — activates when `BRIGHTDATA_API_KEY` is set
 - **Port**: 5000 (Replit standard)
 
-## Project Structure
+## File Structure
 
 ```
 app/
-  api/scrape/route.ts   # Server-side API route — calls Bright Data
-  globals.css           # Global styles
-  layout.tsx            # Root layout
-  page.tsx              # Client UI component
-next.config.ts
-package.json
-tsconfig.json
+  page.tsx                        ← Main dashboard (state + layout)
+  layout.tsx                      ← Root layout + metadata
+  globals.css                     ← All dashboard styles
+  components/
+    HeaderBar.tsx                 ← Title bar with Bright Data badge
+    MetricCards.tsx               ← 4 metric summary cards
+    CityMap.tsx                   ← Leaflet map (client-only, ssr:false)
+    LayerControls.tsx             ← Vacancy/Zoning/Infrastructure toggles
+    ParcelDetailPanel.tsx         ← Click-to-open parcel detail + MCP enrich
+    CopilotPanel.tsx              ← AI Copilot with preset questions
+    SummaryPanel.tsx              ← Mayor Redevelopment Summary + export
+  data/
+    vacancy_sample.json           ← 20 Montgomery vacant parcels (MOCK)
+    infrastructure_sample.json    ← 12 infrastructure projects (MOCK)
+    zoning_sample.json            ← 8 zoning areas (MOCK)
+  lib/
+    types.ts                      ← Shared TypeScript interfaces
+    scoring.ts                    ← Opportunity score algorithm
+    copilot.ts                    ← Copilot logic + preset questions
+    mcpClient.ts                  ← Bright Data MCP abstraction
+    enrichment.ts                 ← Parcel enrichment layer
+  api/
+    copilot/route.ts              ← POST /api/copilot
+    enrich/route.ts               ← POST /api/enrich (Bright Data MCP)
+    scrape/route.ts               ← Original scrape endpoint (preserved)
 ```
 
 ## Environment Variables (Secrets)
 
-Set these in the Replit Secrets panel:
-
-| Variable | Description |
+| Variable | Effect |
 |---|---|
-| `BRIGHTDATA_API_KEY` | Your Bright Data API key (required) |
+| `BRIGHTDATA_API_KEY` | Enables live enrichment in parcel panel + Copilot |
 | `BRIGHTDATA_UNLOCKER_ZONE` | Zone name, defaults to `web_unlocker1` |
-| `BRIGHTDATA_SERP_ZONE` | SERP zone name, defaults to `serp_api1` |
+| `OPENAI_API_KEY` | (Future) Enable real LLM Copilot responses |
 
-## Running
+## Mock vs Live
 
-The app starts automatically via the "Start application" workflow (`npm run dev`).
+| Feature | Status |
+|---|---|
+| Map data (parcels, infra, zones) | MOCK — local JSON |
+| Opportunity scoring | LIVE — computed from data |
+| Copilot responses | MOCK — deterministic keyword logic |
+| Map highlighting from Copilot | LIVE — works now |
+| Parcel click interaction | LIVE — works now |
+| Layer toggles | LIVE — works now |
+| Bright Data enrichment | STUB — activates with API key |
+| Export Summary button | LIVE — downloads JSON |
 
-## Security Notes
+## Packages Added
 
-- The Bright Data API key is only accessed server-side in the API route
-- URL validation enforces HTTP/HTTPS only
-- No secrets are exposed to the client
+- `leaflet` — map rendering
+- `react-leaflet` — (installed, Leaflet used directly for SSR safety)
+- `@types/leaflet` — TypeScript types

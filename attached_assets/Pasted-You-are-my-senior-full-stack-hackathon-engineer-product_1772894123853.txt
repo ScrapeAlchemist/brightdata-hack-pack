@@ -1,0 +1,708 @@
+You are my senior full-stack hackathon engineer + product designer + pragmatic architect.
+
+I have already imported this GitHub repo into Replit and I want you to transform it into our full hackathon MVP:
+
+Repo already imported:
+https://github.com/ScrapeAlchemist/brightdata-hack-pack/tree/master
+
+We are not building a generic Bright Data scraper anymore.
+We are building a polished, demoable civic planning product called:
+
+RevitaVibe Montgomery
+AI Civic Land Intelligence Platform
+
+Our hackathon challenge is:
+
+Innovate on what the city can do with its own land, abandoned spaces, and underdeveloped areas to enhance infrastructure and public spaces.
+
+We need a working interactive UI built inside this existing repo using:
+
+the existing Replit project
+
+the imported Bright Data hackathon repo
+
+Bright Data MCP tools / MCP server patterns
+
+a realistic, hackathon-safe architecture
+
+strong UX for demo day
+
+PRIMARY GOAL
+
+Build a single-page interactive civic planning MVP that includes all of the following visible UI sections:
+
+Required UI Components
+
+Top Title Bar
+
+Top Metric Cards
+
+View A — City Dashboard + Interactive Map
+
+Map Layers / Overlays
+
+Parcel / Area Detail Panel
+
+View B — AI Urban Planning Copilot
+
+Suggested Sample Questions
+
+Map Highlight Response from Copilot
+
+Mayor Report Preview / Summary Panel
+
+The final result should feel like a real city planning dashboard, not a template.
+
+IMPORTANT BUILD PHILOSOPHY
+
+Do not overengineer.
+Do not build unnecessary infrastructure first.
+Do not spend time on perfect production architecture.
+
+Build in stages so the UI becomes visible quickly.
+
+We need a working, demoable MVP in Replit.
+
+Use the existing repo as a scaffold, but repurpose it fully.
+
+WHAT THE UI MUST LOOK LIKE
+
+The final page should be a single dashboard screen with this structure:
+
+Section A — Top Title Bar
+
+At the very top show:
+
+RevitaVibe Montgomery
+
+AI Civic Land Intelligence Platform
+
+subtitle:
+Turning vacant land into opportunity for parks, housing, and stronger neighborhoods
+
+This should be a polished hero/header section.
+
+Section B — Top Metric Cards
+
+Directly below the title bar, show 4 summary cards:
+
+Vacant Lots
+
+High Priority Parcels
+
+Park Gaps
+
+Active Permits
+
+These should be visually attractive and readable.
+
+Use sample/mock counts first if needed.
+
+Section C — Main Middle Layout
+
+The main content area should be split into:
+
+Left / center column
+
+A large interactive map
+
+Right column
+
+A stacked right-side panel containing:
+
+Parcel / Area Detail Panel
+
+AI Urban Planning Copilot
+
+Section D — Bottom Summary Section
+
+At the bottom of the page, show a Mayor Report Preview / Summary Panel
+
+This must remain visible as part of the dashboard.
+
+INTERACTIVE MAP REQUIREMENTS
+
+Use a practical map stack that works in Replit.
+
+Preferred:
+
+Leaflet
+
+React Leaflet
+
+Map should:
+
+center on Montgomery
+
+support zoom and pan
+
+render data markers or shapes
+
+support multiple toggleable layers
+
+support click interaction
+
+support highlighted parcels from Copilot responses
+
+REQUIRED MAP LAYERS
+
+Build these as visible, interactive layer toggles:
+
+Layer 1 — Vacancy / Redevelopment Priority
+
+Show redevelopment-priority parcels, points, or shapes.
+
+Use color coding such as:
+
+red = high priority
+
+orange = medium
+
+yellow = lower priority
+
+Layer 2 — Zoning Compatibility
+
+Show zoning / land-use context.
+
+This can be:
+
+different colored shapes
+
+marker categories
+
+zoning labels
+
+overlay areas
+
+Layer 3 — Infrastructure / Permits
+
+Show infrastructure readiness / permit / project signals.
+
+This can be:
+
+blue markers
+
+project pins
+
+permit-related overlays
+
+Stretch Layer 4 — Pothole Priority
+
+Add only if easy.
+Do not block MVP on this.
+
+PARCEL / AREA DETAIL PANEL REQUIREMENTS
+
+When a user clicks a parcel, marker, or area on the map, show a right-side detail panel with:
+
+Parcel / Area name or ID
+
+address if available
+
+zoning
+
+opportunity score
+
+recommended use
+
+explanation / reasoning
+
+infrastructure context
+
+Bright Data MCP enrichment note if available
+
+last updated timestamp if useful
+
+This panel must update dynamically based on what is clicked.
+
+AI URBAN PLANNING COPILOT REQUIREMENTS
+
+Build a planning assistant panel with:
+
+title: Ask the Planning Copilot
+
+input box
+
+sample question buttons
+
+result / response area
+
+The Copilot must support these 3 anchor questions:
+
+Where should Montgomery build a new community park?
+
+Which neighborhoods have the highest redevelopment opportunity?
+
+What’s the best use for this vacant lot?
+
+Initial implementation
+
+Use deterministic logic over local data so this works quickly.
+
+Enhanced implementation
+
+Add a hook for Bright Data MCP enrichment so Copilot responses can optionally include outside supporting context.
+
+SUGGESTED SAMPLE QUESTION BUTTONS
+
+Add visible clickable question buttons/chips for the 3 anchor questions.
+
+When clicked:
+
+either populate the input
+
+or run the query immediately
+
+MAP HIGHLIGHT RESPONSE FROM COPILOT
+
+When the Copilot answers, it must return:
+
+parcel IDs / area IDs
+
+scores
+
+reasons
+
+Those IDs must then be highlighted on the interactive map.
+
+This is one of the most important demo interactions.
+
+MAYOR REPORT PREVIEW / SUMMARY PANEL
+
+At the bottom of the page, show a polished panel titled:
+
+Mayor Redevelopment Summary
+
+It should include:
+
+top 3 opportunities
+
+short key insights
+
+recommended use for each
+
+export summary button (can be a mock button initially)
+
+This must look presentation-ready.
+
+DATA STRATEGY
+
+Use a staged approach.
+
+Stage 1 — local sample/mock data first
+
+Create local JSON files so the UI becomes visible quickly.
+
+At minimum create:
+
+data/vacancy_sample.json
+
+Fields:
+
+id
+
+name
+
+address
+
+lat
+
+lng
+
+priority
+
+zoning
+
+permit_inactive_years
+
+recommended_use
+
+opportunity_score
+
+infrastructure_context
+
+data/infrastructure_sample.json
+
+Fields:
+
+id
+
+name
+
+lat
+
+lng
+
+type
+
+status
+
+Optional data/zoning_sample.json
+
+Only if helpful; otherwise zoning can be embedded into vacancy sample.
+
+Stage 2 — prepare for real datasets later
+
+Structure the code so these sample datasets can later be replaced by:
+
+public APIs
+
+ArcGIS layers
+
+planning GIS data
+
+Bright Data MCP enrichment
+
+BRIGHT DATA MCP REQUIREMENTS
+
+Use Bright Data MCP as the preferred web-access and enrichment layer.
+
+Do not treat Bright Data as only a raw scraper API.
+
+Use the MCP pattern shown in the hackathon README/demo:
+
+MCP-based tool layer
+
+API_TOKEN as main auth variable
+
+@brightdata/mcp pattern conceptually
+
+tools such as:
+
+search_engine
+
+scrape_as_markdown
+
+scrape_batch
+
+optional session_stats
+
+Important
+
+The core UI must not depend on live MCP success to render.
+
+So the product should work like this:
+
+Base product works with:
+
+local sample datasets
+
+local scoring logic
+
+deterministic Copilot responses
+
+MCP adds:
+
+external enrichment
+
+supporting web context
+
+optional external summary signals
+
+future extensibility
+
+MCP IMPLEMENTATION REQUIREMENTS
+
+Create a small abstraction layer such as:
+
+lib/mcpClient.ts
+lib/enrichment.ts
+
+This layer should conceptually support:
+
+search_engine
+
+scrape_as_markdown
+
+scrape_batch
+
+Use this MCP layer for:
+
+Copilot enrichment
+
+parcel enrichment note
+
+mayor summary support
+
+optional evidence or context
+
+If real MCP connectivity is not practical immediately in Replit, create a clean stub/mock adapter so MCP can be wired later without rewriting the UI.
+
+REQUIRED FILE / COMPONENT STRUCTURE
+
+Please create or refactor toward a structure like this:
+
+app/
+  page.tsx
+
+components/
+  HeaderBar.tsx
+  MetricCards.tsx
+  CityMap.tsx
+  LayerControls.tsx
+  ParcelDetailPanel.tsx
+  CopilotPanel.tsx
+  SummaryPanel.tsx
+
+data/
+  vacancy_sample.json
+  infrastructure_sample.json
+  zoning_sample.json (optional)
+
+lib/
+  scoring.ts
+  copilot.ts
+  types.ts
+  mcpClient.ts
+  enrichment.ts
+
+If the repo already has a useful structure, adapt intelligently instead of duplicating unnecessarily.
+
+IMPLEMENTATION ORDER (VERY IMPORTANT)
+
+Build in this exact order:
+
+Phase 1 — Build dashboard shell
+
+Create:
+
+title bar
+
+metric cards
+
+blank map area
+
+blank parcel panel
+
+blank Copilot panel
+
+blank summary panel
+
+Phase 2 — Make the map visible
+
+Render an actual Leaflet map centered on Montgomery.
+
+Phase 3 — Add redevelopment data
+
+Load vacancy_sample.json and render colored markers or shapes.
+
+Phase 4 — Add map layers
+
+Add visible layer toggles for:
+
+vacancy
+
+zoning
+
+infrastructure
+
+Phase 5 — Add click interaction
+
+Make clicking a parcel/marker update the Parcel Detail Panel.
+
+Phase 6 — Add metric card counts
+
+Derive the top metrics from loaded sample data.
+
+Phase 7 — Build Copilot panel
+
+Add:
+
+input box
+
+sample question buttons
+
+deterministic responses for the 3 anchor questions
+
+Phase 8 — Highlight parcels from Copilot
+
+When Copilot returns parcel IDs, visually highlight them on the map.
+
+Phase 9 — Add MCP enrichment hook
+
+Add one visible Bright Data MCP enrichment note into:
+
+parcel panel
+
+Copilot response
+
+or summary panel
+
+Phase 10 — Add summary panel
+
+Populate Mayor Redevelopment Summary with top 3 opportunities.
+
+Phase 11 — Polish
+
+Improve layout, spacing, shadows, colors, and responsiveness.
+
+OPPORTUNITY SCORE LOGIC
+
+Keep it simple and explainable.
+
+Use a lightweight scoring model such as:
+
+vacancy / underuse = 40%
+
+zoning compatibility = 25%
+
+infrastructure readiness = 20%
+
+permit inactivity = 15%
+
+Return a score from 0–100.
+
+Use this score in:
+
+parcel detail panel
+
+Copilot results
+
+mayor summary
+
+Put the logic in a reusable helper file.
+
+UI / DESIGN REQUIREMENTS
+
+Make the UI feel like a modern civic-tech dashboard:
+
+clean
+
+professional
+
+soft shadows
+
+rounded cards
+
+good spacing
+
+accessible typography
+
+minimal clutter
+
+Color guidance:
+
+deep blue / civic navy for headers
+
+warm reds/oranges/yellows for redevelopment priority
+
+blue for infrastructure
+
+green for opportunity / park / success highlights
+
+The app should look credible to:
+
+a mayor
+
+a city planner
+
+a hackathon judge
+
+REPLIT REQUIREMENTS
+
+Because this runs in Replit:
+
+use packages that work well there
+
+make sure app starts correctly
+
+install dependencies if needed
+
+fix Leaflet CSS/import issues
+
+ensure the UI is visible in preview
+
+explain how to run/test it
+
+Likely needed:
+
+npm install leaflet react-leaflet
+npm install -D @types/leaflet
+
+Also ensure Leaflet CSS is imported correctly.
+
+If MCP packages are feasible, use them, but do not let MCP block the UI.
+
+CRITICAL SUCCESS CRITERIA
+
+By the end, I should be able to open the app in Replit and see:
+
+title bar
+
+4 metric cards
+
+interactive Montgomery map
+
+3 working layer toggles
+
+clickable redevelopment markers
+
+parcel detail panel updates on click
+
+Copilot panel with 3 sample questions
+
+Copilot highlights parcels on map
+
+mayor summary panel at bottom
+
+one clearly visible Bright Data MCP enrichment hook or note
+
+If any part cannot be fully completed, implement the best working fallback and explain it.
+
+IMPORTANT CONSTRAINTS
+
+Do not leave this as a generic URL scraper interface
+
+Do not ask vague questions unless absolutely necessary
+
+Make sensible choices and move forward
+
+Prefer local mock data first over broken live integrations
+
+Make it demoable fast
+
+Keep the code readable
+
+Reuse the imported repo where useful
+
+Preserve a place for Bright Data MCP integration
+
+Do not block the MVP on full MCP auth or pro-tool setup
+
+WHAT I WANT BACK AFTER BUILDING
+
+After building, show me:
+
+what files you created/modified
+
+what packages you installed
+
+what the page now includes
+
+how the map layers work
+
+how the parcel click interaction works
+
+how the Copilot logic works
+
+how MCP is integrated or stubbed
+
+what remains mock vs live
+
+any blockers
+
+exactly how to run/test it in Replit
+
+ALSO BE A CRITIC OF YOUR OWN PLAN
+
+Before coding, briefly review the build plan critically and tell me:
+
+what is realistic in hackathon time
+
+what you intentionally simplified
+
+what stretch items you deferred
+
+what risks remain
+
+Then proceed with implementation.

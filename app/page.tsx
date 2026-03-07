@@ -1,67 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import HeaderBar from "@/app/components/HeaderBar";
+import MetricCards from "@/app/components/MetricCards";
+import LayerControls from "@/app/components/LayerControls";
+import ParcelDetailPanel from "@/app/components/ParcelDetailPanel";
+import CopilotPanel from "@/app/components/CopilotPanel";
+import SummaryPanel from "@/app/components/SummaryPanel";
+import type { VacancyParcel, InfrastructureItem, ZoneArea, LayerName } from "@/app/lib/types";
 
-export default function Home() {
-  const [url, setUrl] = useState("");
-  const [result, setResult] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+import vacancyRaw from "@/app/data/vacancy_sample.json";
+import infraRaw from "@/app/data/infrastructure_sample.json";
+import zonesRaw from "@/app/data/zoning_sample.json";
 
-  async function handleScrape(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setResult("");
+const CityMap = dynamic(() => import("@/app/components/CityMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="map-loading">
+      <div className="map-loading-inner">
+        <div className="map-spinner" />
+        <div>Loading Montgomery map…</div>
+      </div>
+    </div>
+  ),
+});
 
-    try {
-      const res = await fetch("/api/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
+const parcels = vacancyRaw as VacancyParcel[];
+const infrastructure = infraRaw as InfrastructureItem[];
+const zones = zonesRaw as ZoneArea[];
 
-      const data = await res.json();
+export default function Dashboard() {
+  const [activeLayers, setActiveLayers] = useState<Set<LayerName>>(
+    new Set(["vacancy", "zoning", "infrastructure"])
+  );
+  const [selectedParcel, setSelectedParcel] = useState<VacancyParcel | null>(null);
+  const [highlightedParcelIds, setHighlightedParcelIds] = useState<string[]>([]);
 
-      if (!res.ok) {
-        setError(data.error || "Scrape failed");
-        return;
-      }
+  const metrics = useMemo(() => ({
+    vacantLots: parcels.length,
+    highPriority: parcels.filter((p) => p.priority === "high").length,
+    parkGaps: parcels.filter((p) => p.recommended_use.toLowerCase().includes("park") || p.recommended_use.toLowerCase().includes("garden") || p.recommended_use.toLowerCase().includes("green")).length,
+    activePermits: infrastructure.filter((i) => i.status === "active").length,
+  }), []);
 
-      setResult(data.html);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
+  function toggleLayer(layer: LayerName) {
+    setActiveLayers((prev) => {
+      const next = new Set(prev);
+      if (next.has(layer)) next.delete(layer);
+      else next.add(layer);
+      return next;
+    });
   }
 
   return (
-    <main>
-      <h1>Bright Data Scraper</h1>
-      <p>Enter a URL to scrape its HTML content using Bright Data Web Unlocker.</p>
+    <div className="dashboard">
+      <HeaderBar />
+      <MetricCards metrics={metrics} />
 
-      <form onSubmit={handleScrape}>
-        <input
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://example.com"
-          required
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? "Scraping..." : "Scrape"}
-        </button>
-      </form>
-
-      {error && <div className="error">{error}</div>}
-
-      {result && (
-        <div>
-          <h2>Result ({result.length.toLocaleString()} chars)</h2>
-          <pre>{result.slice(0, 5000)}</pre>
+      <div className="main-content">
+        <div className="map-column">
+          <LayerControls activeLayers={activeLayers} onToggle={toggleLayer} />
+          <CityMap
+            parcels={parcels}
+            infrastructure={infrastructure}
+            zones={zones}
+            activeLayers={activeLayers}
+            selectedParcelId={selectedParcel?.id}
+            highlightedParcelIds={highlightedParcelIds}
+            onParcelClick={setSelectedParcel}
+          />
         </div>
-      )}
-    </main>
+
+        <div className="right-column">
+          <ParcelDetailPanel parcel={selectedParcel} />
+          <CopilotPanel
+            parcels={parcels}
+            selectedParcel={selectedParcel}
+            onHighlight={setHighlightedParcelIds}
+          />
+        </div>
+      </div>
+
+      <SummaryPanel parcels={parcels} />
+    </div>
   );
 }
