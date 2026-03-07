@@ -37,6 +37,19 @@ export interface InfrastructureItem {
   is_live?: boolean;
 }
 
+export interface ParkItem {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  address: string;
+  facilityType: string;
+  operDays: string;
+  source: string;
+  citation: string;
+  is_live: boolean;
+}
+
 export interface ZoneArea {
   id: string;
   name: string;
@@ -64,6 +77,21 @@ export interface EnrichmentResult {
   error?: string;
 }
 
+export interface ParcelLookupResult {
+  parcelNo: string;
+  address: string;
+  city: string;
+  owner: string;
+  neighborhood: string;
+  assessmentClass: string;
+  landUseCode: string;
+  totalValue: number;
+  acreage: number;
+  source: string;
+  citationUrl: string;
+  is_live: boolean;
+}
+
 export interface LiveMetrics {
   vacantLots: number;
   highPriority: number;
@@ -75,13 +103,24 @@ export interface LiveMetrics {
   osmParkCount?: number;
   osmSchoolCount?: number;
   osmBusStopCount?: number;
+  gisParkCount?: number;
+  gisInfraCount?: number;
+  gisPermitCount?: number;
+  liveInfrastructure?: InfrastructureItem[];
+  liveParks?: ParkItem[];
   dataStatus: {
     parcels: DataStatus;
     census: DataStatus;
     osm: DataStatus;
+    infrastructure: DataStatus;
+    parks: DataStatus;
+    permits: DataStatus;
   };
   censusSource?: string;
   osmSource?: string;
+  gisInfraSource?: string;
+  gisParksSource?: string;
+  gisPermitsSource?: string;
   fetchedAt: string;
 }
 

@@ -326,6 +326,27 @@ html, body {
 .parcel-citation a { font-size: 11px; color: #0d9488; text-decoration: none; }
 .parcel-citation a:hover { text-decoration: underline; }
 
+/* ─── City Records Lookup block ─────────────────── */
+.city-record-block {
+  border: 1px solid #bae6fd; border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 10px; background: #f0f9ff;
+}
+.city-record-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; font-weight: 700; color: #0369a1; margin-bottom: 8px;
+}
+.city-record-loading { font-size: 10px; color: #64748b; font-style: italic; }
+.city-record-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.city-field { }
+.mono { font-family: monospace; font-size: 10px; }
+.city-record-citation { margin-top: 4px; }
+.city-record-citation a {
+  font-size: 10px; color: #0369a1; text-decoration: none;
+}
+.city-record-citation a:hover { text-decoration: underline; }
+
 /* ─── Enrichment section ─────────────────────────── */
 .enrich-section {
   border: 1px solid #e2e8f0; border-radius: 10px;

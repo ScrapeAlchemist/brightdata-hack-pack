@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { VacancyParcel, EnrichmentResult } from "@/app/lib/types";
+import type { VacancyParcel, EnrichmentResult, ParcelLookupResult } from "@/app/lib/types";
 import { getScoreColor, getScoreLabel } from "@/app/lib/scoring";
 
 interface Props {
@@ -13,16 +13,22 @@ export default function ParcelDetailPanel({ parcel }: Props) {
   const [enrichResult, setEnrichResult] = useState<EnrichmentResult | null>(null);
   const [enrichError, setEnrichError] = useState<string | null>(null);
 
+  const [lookingUp, setLookingUp] = useState(false);
+  const [cityRecord, setCityRecord] = useState<ParcelLookupResult | null>(null);
+
   useEffect(() => {
     if (!parcel) {
       setEnrichResult(null);
       setEnrichError(null);
+      setCityRecord(null);
       return;
     }
 
     setEnrichResult(null);
     setEnrichError(null);
+    setCityRecord(null);
     setEnriching(true);
+    setLookingUp(true);
 
     const controller = new AbortController();
 
@@ -54,6 +60,21 @@ export default function ParcelDetailPanel({ parcel }: Props) {
           setEnrichError("Enrichment unavailable right now.");
           setEnriching(false);
         }
+      });
+
+    fetch("/api/parcel-lookup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address: parcel.address }),
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.found) setCityRecord(data.parcel);
+        setLookingUp(false);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") setLookingUp(false);
       });
 
     return () => controller.abort();
@@ -96,7 +117,7 @@ export default function ParcelDetailPanel({ parcel }: Props) {
         <div className="parcel-empty-icon">📍</div>
         <div className="parcel-empty-title">Parcel Detail</div>
         <div className="parcel-empty-desc">
-          Click any marker on the map to view parcel details and get automatic AI-powered enrichment.
+          Click any marker on the map to view parcel details and get automatic AI-powered enrichment with real city data.
         </div>
       </div>
     );
@@ -107,16 +128,13 @@ export default function ParcelDetailPanel({ parcel }: Props) {
   const priorityColors: Record<string, string> = { high: "#dc2626", medium: "#ea580c", low: "#ca8a04" };
   const pColor = priorityColors[parcel.priority];
 
-  const sourceLabel = parcel.is_live ? "live" : "sample";
-  const sourceColors = { live: "#16a34a", sample: "#64748b", fallback: "#64748b" };
-
   return (
     <div className="panel parcel-panel">
       <div className="panel-header">
         <div className="panel-title">📍 Parcel Detail</div>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <span className="data-badge" style={{ background: sourceColors[sourceLabel] + "20", color: sourceColors[sourceLabel] }}>
-            {sourceLabel === "live" ? "🟢 live" : "📂 sample"}
+          <span className="data-badge" style={{ background: "#64748b20", color: "#64748b" }}>
+            📂 sample
           </span>
           <span className="badge" style={{ background: pColor + "20", color: pColor }}>
             {parcel.priority.toUpperCase()}
@@ -135,6 +153,60 @@ export default function ParcelDetailPanel({ parcel }: Props) {
           <a href={parcel.citation_url} target="_blank" rel="noopener noreferrer">
             📎 View source dataset
           </a>
+        </div>
+      )}
+
+      {(lookingUp || cityRecord) && (
+        <div className="city-record-block">
+          <div className="city-record-header">
+            <span>🏛️ City Records Lookup</span>
+            {lookingUp ? (
+              <span className="city-record-loading">searching…</span>
+            ) : cityRecord ? (
+              <span className="data-badge" style={{ background: "#16a34a20", color: "#16a34a" }}>🟢 live</span>
+            ) : null}
+          </div>
+          {cityRecord && (
+            <div className="city-record-grid">
+              <div className="city-field">
+                <div className="field-label">Parcel No</div>
+                <div className="field-value mono">{cityRecord.parcelNo}</div>
+              </div>
+              <div className="city-field">
+                <div className="field-label">Owner</div>
+                <div className="field-value">{cityRecord.owner || "—"}</div>
+              </div>
+              <div className="city-field">
+                <div className="field-label">Assessed Value</div>
+                <div className="field-value" style={{ color: "#0d9488", fontWeight: 600 }}>
+                  {cityRecord.totalValue > 0
+                    ? `$${cityRecord.totalValue.toLocaleString()}`
+                    : "—"}
+                </div>
+              </div>
+              <div className="city-field">
+                <div className="field-label">Land Use</div>
+                <div className="field-value">{cityRecord.landUseCode || "—"}</div>
+              </div>
+              {cityRecord.acreage > 0 && (
+                <div className="city-field">
+                  <div className="field-label">Acreage</div>
+                  <div className="field-value">{cityRecord.acreage.toFixed(2)} ac</div>
+                </div>
+              )}
+              {cityRecord.neighborhood && (
+                <div className="city-field">
+                  <div className="field-label">Neighborhood</div>
+                  <div className="field-value">{cityRecord.neighborhood}</div>
+                </div>
+              )}
+              <div className="city-record-citation" style={{ gridColumn: "1 / -1" }}>
+                <a href={cityRecord.citationUrl} target="_blank" rel="noopener noreferrer">
+                  📎 Montgomery City Assessor — Parcels_Owner
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

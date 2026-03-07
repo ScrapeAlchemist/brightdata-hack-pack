@@ -3,13 +3,14 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { VacancyParcel, InfrastructureItem, ZoneArea, LayerName } from "@/app/lib/types";
+import type { VacancyParcel, InfrastructureItem, ZoneArea, ParkItem, LayerName } from "@/app/lib/types";
 import { getPriorityColor } from "@/app/lib/scoring";
 
 interface Props {
   parcels: VacancyParcel[];
   infrastructure: InfrastructureItem[];
   zones: ZoneArea[];
+  parks?: ParkItem[];
   activeLayers: Set<LayerName>;
   selectedParcelId?: string;
   highlightedParcelIds: string[];
@@ -30,10 +31,17 @@ const ZONE_COMPAT_COLOR: Record<string, string> = {
   low: "#9ca3af",
 };
 
+function statusLabel(s: string): string {
+  if (s === "active") return "ACTIVE";
+  if (s === "completed") return "COMPLETE";
+  return "PLANNED";
+}
+
 export default function CityMap({
   parcels,
   infrastructure,
   zones,
+  parks = [],
   activeLayers,
   selectedParcelId,
   highlightedParcelIds,
@@ -90,19 +98,21 @@ export default function CityMap({
           fillOpacity: isHighlighted ? 1 : 0.85,
         });
 
-        marker.bindPopup(L.popup({ maxWidth: 260 }).setContent(`
-          <div style="font-family:system-ui,sans-serif;padding:4px 0">
-            <div style="font-weight:700;font-size:13px;margin-bottom:4px;color:#0f172a">${parcel.name}</div>
-            <div style="font-size:11px;color:#64748b;margin-bottom:6px">${parcel.address}</div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
-              <span style="background:${color}20;color:${color};padding:2px 7px;border-radius:99px;font-size:11px;font-weight:600;text-transform:uppercase">${parcel.priority}</span>
-              <span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:99px;font-size:11px">${parcel.zoning}</span>
+        marker.bindPopup(
+          L.popup({ maxWidth: 260 }).setContent(`
+            <div style="font-family:system-ui,sans-serif;padding:4px 0">
+              <div style="font-weight:700;font-size:13px;margin-bottom:4px;color:#0f172a">${parcel.name}</div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:6px">${parcel.address}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                <span style="background:${color}20;color:${color};padding:2px 7px;border-radius:99px;font-size:11px;font-weight:600;text-transform:uppercase">${parcel.priority}</span>
+                <span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:99px;font-size:11px">${parcel.zoning}</span>
+              </div>
+              <div style="font-size:12px;color:#0f172a"><b>Score:</b> ${parcel.opportunity_score}/100</div>
+              <div style="font-size:12px;color:#0f172a"><b>→</b> ${parcel.recommended_use}</div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:4px">Click to open detail panel →</div>
             </div>
-            <div style="font-size:12px;color:#0f172a"><b>Score:</b> ${parcel.opportunity_score}/100</div>
-            <div style="font-size:12px;color:#0f172a"><b>→</b> ${parcel.recommended_use}</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:4px">Click to open detail panel →</div>
-          </div>
-        `));
+          `)
+        );
 
         marker.on("click", () => {
           onParcelClick(parcel);
@@ -117,6 +127,7 @@ export default function CityMap({
     if (activeLayers.has("infrastructure")) {
       infrastructure.forEach((item) => {
         const color = INFRA_STATUS_COLOR[item.status] || "#2563eb";
+        const liveTag = item.is_live ? " · 🟢 live" : "";
 
         const icon = L.divIcon({
           html: `<div style="background:${color};width:13px;height:13px;border-radius:3px;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.25);transform:rotate(45deg)"></div>`,
@@ -129,8 +140,31 @@ export default function CityMap({
         marker.bindPopup(`
           <div style="font-family:system-ui,sans-serif;padding:4px 0">
             <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px">${item.name}</div>
-            <span style="background:${color}20;color:${color};padding:2px 7px;border-radius:99px;font-size:11px;font-weight:600;text-transform:uppercase">${item.status}</span>
+            <span style="background:${color}20;color:${color};padding:2px 7px;border-radius:99px;font-size:11px;font-weight:600;text-transform:uppercase">${statusLabel(item.status)}</span>
             <div style="font-size:11px;color:#475569;margin-top:6px;line-height:1.5">${item.description}</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:4px">${item.source ?? ""}${liveTag}</div>
+          </div>
+        `);
+        marker.addTo(map);
+        markersRef.current.push(marker);
+      });
+
+      parks.forEach((park) => {
+        const icon = L.divIcon({
+          html: `<div style="background:#15803d;color:white;width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:9px">🌳</div>`,
+          className: "",
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+        });
+
+        const marker = L.marker([park.lat, park.lng], { icon });
+        marker.bindPopup(`
+          <div style="font-family:system-ui,sans-serif;padding:4px 0">
+            <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px">${park.name}</div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:5px">${park.address}</div>
+            <span style="background:#dcfce720;color:#15803d;padding:2px 7px;border-radius:99px;font-size:11px;font-weight:600">${park.facilityType}</span>
+            <div style="font-size:11px;color:#475569;margin-top:6px">Hours: ${park.operDays}</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:4px">🟢 Montgomery City GIS live</div>
           </div>
         `);
         marker.addTo(map);
@@ -162,7 +196,7 @@ export default function CityMap({
         markersRef.current.push(marker);
       });
     }
-  }, [parcels, infrastructure, zones, activeLayers, selectedParcelId, highlightedParcelIds, onParcelClick]);
+  }, [parcels, infrastructure, zones, parks, activeLayers, selectedParcelId, highlightedParcelIds, onParcelClick]);
 
   return (
     <div className="city-map-wrapper">
@@ -176,7 +210,12 @@ export default function CityMap({
           </>
         )}
         {activeLayers.has("infrastructure") && (
-          <div className="legend-item"><span className="legend-sq" style={{ background: "#2563eb", transform: "rotate(45deg)", display: "inline-block" }} />Infrastructure</div>
+          <>
+            <div className="legend-item"><span className="legend-sq" style={{ background: "#2563eb", transform: "rotate(45deg)", display: "inline-block" }} />Infrastructure</div>
+            {parks.length > 0 && (
+              <div className="legend-item"><span style={{ fontSize: "11px" }}>🌳</span> Parks ({parks.length} live)</div>
+            )}
+          </>
         )}
         {activeLayers.has("zoning") && (
           <div className="legend-item"><span className="legend-sq" style={{ background: "#16a34a" }} />Zoning</div>

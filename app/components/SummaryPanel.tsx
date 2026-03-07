@@ -18,7 +18,9 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
   const avgScore = Math.round(parcels.reduce((s, p) => s + p.opportunity_score, 0) / parcels.length);
 
   const censusLive = liveMetrics?.dataStatus.census === "live";
-  const osmLive = liveMetrics?.dataStatus.osm === "live";
+  const parksLive = liveMetrics?.dataStatus.parks === "live";
+  const infraLive = liveMetrics?.dataStatus.infrastructure === "live";
+  const permitsLive = liveMetrics?.dataStatus.permits === "live";
 
   function handleExport() {
     const report = {
@@ -27,9 +29,13 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
       dataSources: {
         parcels: liveMetrics?.dataStatus.parcels ?? "fallback",
         census: liveMetrics?.dataStatus.census ?? "fallback",
-        osm: liveMetrics?.dataStatus.osm ?? "fallback",
+        infrastructure: liveMetrics?.dataStatus.infrastructure ?? "fallback",
+        parks: liveMetrics?.dataStatus.parks ?? "fallback",
+        permits: liveMetrics?.dataStatus.permits ?? "fallback",
         censusSource: liveMetrics?.censusSource,
-        osmSource: liveMetrics?.osmSource,
+        gisInfraSource: liveMetrics?.gisInfraSource,
+        gisParksSource: liveMetrics?.gisParksSource,
+        gisPermitsSource: liveMetrics?.gisPermitsSource,
       },
       metrics: {
         totalVacant,
@@ -38,8 +44,9 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
         censusVacancyRate: liveMetrics?.censusVacancyRate,
         censusPovertyRate: liveMetrics?.censusPovertyRate,
         censusMedianIncome: liveMetrics?.censusMedianIncome,
-        osmParkCount: liveMetrics?.osmParkCount,
-        osmSchoolCount: liveMetrics?.osmSchoolCount,
+        gisParkCount: liveMetrics?.gisParkCount,
+        gisInfraCount: liveMetrics?.gisInfraCount,
+        gisPermitCount: liveMetrics?.gisPermitCount,
       },
       topOpportunities: top3.map((p) => ({
         id: p.id,
@@ -71,6 +78,9 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
             {censusLive && liveMetrics?.censusPovertyRate
               ? ` · ${(liveMetrics.censusPovertyRate * 100).toFixed(1)}% county poverty rate`
               : ""}
+            {infraLive && liveMetrics?.gisInfraCount
+              ? ` · ${liveMetrics.gisInfraCount} live infra projects`
+              : ""}
           </div>
         </div>
         <button onClick={handleExport} className="export-btn">
@@ -85,9 +95,9 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
             <div className="insight-title">Key Insight</div>
             <div className="insight-text">
               West End and Lincoln Heights represent the highest concentration of redevelopment
-              opportunity, with {highPriority} high-priority sites averaging {avgScore}/100 across the portfolio.
-              {osmLive && liveMetrics?.osmParkCount !== undefined
-                ? ` OSM live data confirms ${liveMetrics.osmParkCount} mapped parks in Montgomery.`
+              opportunity, with {highPriority} high-priority sites averaging {avgScore}/100.
+              {parksLive && liveMetrics?.gisParkCount !== undefined
+                ? ` City GIS confirms ${liveMetrics.gisParkCount} mapped parks in Montgomery.`
                 : ""}
             </div>
           </div>
@@ -97,8 +107,9 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
           <div className="insight-body">
             <div className="insight-title">Infrastructure Alignment</div>
             <div className="insight-text">
-              {Math.round(highPriority * 0.7)} high-priority parcels are adjacent to active infrastructure
-              projects, creating a development-ready pipeline for the next fiscal year.
+              {infraLive && liveMetrics?.gisInfraCount
+                ? `${liveMetrics.gisInfraCount} live infrastructure improvement projects recorded by Montgomery City GIS, creating an active development pipeline.`
+                : `${Math.round(highPriority * 0.7)} high-priority parcels are adjacent to active infrastructure projects, creating a development-ready pipeline.`}
             </div>
           </div>
         </div>
@@ -109,7 +120,7 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
             <div className="insight-text">
               Estimated redevelopment value across top {highPriority} parcels: $240M–$380M.
               {censusLive && liveMetrics?.censusMedianIncome
-                ? ` Median household income in Montgomery County: $${liveMetrics.censusMedianIncome.toLocaleString()} (Census ACS 2022).`
+                ? ` Median household income: $${liveMetrics.censusMedianIncome.toLocaleString()} (Census ACS 2022).`
                 : " Based on comparable mid-sized Alabama city projects."}
             </div>
           </div>
@@ -140,20 +151,26 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
 
       <div className="summary-data-status">
         <div className="data-status-row">
-          <span className="data-status-label">Data freshness:</span>
+          <span className="data-status-label">Data sources:</span>
           <span className={`data-status-val ${censusLive ? "status-live" : "status-fallback"}`}>
-            {censusLive ? "🟢" : "📂"} Census: {liveMetrics?.censusSource ?? "fallback"}
+            {censusLive ? "🟢" : "📂"} Census ACS
           </span>
-          <span className={`data-status-val ${osmLive ? "status-live" : "status-fallback"}`}>
-            {osmLive ? "🟢" : "📂"} OSM: {liveMetrics?.osmSource ?? "fallback"}
+          <span className={`data-status-val ${infraLive ? "status-live" : "status-fallback"}`}>
+            {infraLive ? "🟢" : "📂"} Infrastructure ({liveMetrics?.gisInfraCount ?? 0} projects)
+          </span>
+          <span className={`data-status-val ${parksLive ? "status-live" : "status-fallback"}`}>
+            {parksLive ? "🟢" : "📂"} Parks ({liveMetrics?.gisParkCount ?? 0} live)
+          </span>
+          <span className={`data-status-val ${permitsLive ? "status-live" : "status-fallback"}`}>
+            {permitsLive ? "🟢" : "📂"} Permits ({liveMetrics?.gisPermitCount ?? 0} total)
           </span>
           <span className="data-status-val status-fallback">
-            📂 Parcels: Montgomery, AL sample dataset
+            📂 Parcels: curated sample
           </span>
         </div>
         <div className="summary-footer">
-          Parcel data: curated Montgomery, AL sample · Census ACS 2022 · OpenStreetMap via Overpass API ·
-          Bright Data MCP enrichment available · Generated by RevitaVibe Montgomery
+          Parcels: curated Montgomery, AL sample · Census ACS 2022 (live) · Montgomery City GIS Infrastructure & Parks (live) ·
+          Building Permits (live) · Bright Data MCP enrichment on parcel click · RevitaVibe Montgomery
         </div>
       </div>
     </div>

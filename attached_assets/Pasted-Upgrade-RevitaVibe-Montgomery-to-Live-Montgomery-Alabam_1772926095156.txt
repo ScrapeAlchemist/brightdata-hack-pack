@@ -1,0 +1,682 @@
+Upgrade RevitaVibe Montgomery to Live Montgomery Alabama Data + MCP Enrichment
+
+You are my senior full-stack engineer, geospatial architect, civic-data engineer, and AI agent integration lead.
+
+We already have a working MVP application called:
+
+RevitaVibe Montgomery
+AI Civic Land Intelligence Platform
+
+The app already includes:
+
+Interactive City Map
+
+Layer toggles
+
+Parcel detail panel
+
+AI Urban Planning Copilot
+
+Mayor summary panel
+
+Metric cards
+
+Bright Data MCP enrichment
+
+Sample JSON data used for initial development
+
+Your task is to upgrade the application to use live Montgomery, Alabama civic datasets while preserving the existing UI and functionality.
+
+FIRST RULE — INSPECT BEFORE CHANGING
+
+Before implementing anything:
+
+inspect the current working app carefully
+
+identify what is already implemented
+
+verify whether each existing feature is actually working
+
+do not duplicate existing components, routes, dataset logic, or workflows
+
+only replace or upgrade the parts that are still:
+
+mock
+
+sample-data driven
+
+incomplete
+
+stubbed
+
+failing
+
+missing live data integration
+
+Very important:
+
+If something is already correctly implemented:
+
+keep it
+
+verify it works
+
+reuse it
+
+extend it only if necessary
+
+Do not rebuild working pieces from scratch.
+
+PRIMARY RULE
+
+This entire project is for:
+
+Montgomery, Alabama
+
+Do NOT use datasets from:
+
+Montgomery County, Maryland
+
+data.montgomerycountymd.gov
+
+Maryland planning GIS portals
+
+MC Planning Hub
+
+If any Maryland dataset appears, reject it and document the reason as geography mismatch.
+
+PRIMARY OBJECTIVE
+
+Convert the application from sample-data driven to live-data driven using Montgomery, Alabama datasets.
+
+But do this using a performance-safe architecture so the demo remains stable.
+
+Required architecture
+
+Live Source Driven
+
+Server Normalization
+
+Short Caching
+
+Lazy Loading
+
+MCP Enrichment
+
+This means:
+
+data originates from live civic datasets
+
+server fetches and normalizes the data
+
+server caches results briefly
+
+UI reads normalized results
+
+parcel click triggers enrichment
+
+PARCEL CLICK WORKFLOW (CRITICAL)
+
+Implement and preserve this exact behavior:
+
+User clicks parcel on map
+        ↓
+selectedParcel state updates
+        ↓
+Parcel detail panel renders immediately
+        ↓
+Server fetches additional parcel context if needed
+        ↓
+Bright Data MCP enrichment auto-triggers
+        ↓
+Loading spinner appears
+        ↓
+MCP returns insights with citations
+        ↓
+Panel updates with bullet insights + source links
+
+Important:
+
+panel must render immediately
+
+enrichment must run in background
+
+UI must never wait for enrichment
+
+if this workflow already exists, verify it works and improve only what is missing
+
+CURRENT DATA PROBLEM
+
+The current app still relies on local files such as:
+
+vacancy_sample.json
+infrastructure_sample.json
+zoning_sample.json
+
+These must be replaced with live datasets wherever possible.
+
+Local files may remain only as fallback safety.
+
+Do not remove fallback protection unless a live source is fully reliable.
+
+DATASET PRIORITY ORDER
+
+When selecting live data sources, use this exact order.
+
+Do NOT waste time exploring unrelated portals.
+
+Priority 1 — Montgomery Alabama GIS / Open Data Viewer
+
+Primary source for the application.
+
+GIS viewer:
+
+https://opendata.montgomeryal.gov/items/9b52741f117e40dea059575190b30b38/explore
+
+Datasets available through this portal:
+
+Parcels
+
+Parcel boundaries, parcel IDs, addresses.
+
+Zoning Lookup
+
+Zoning classification and permitted land uses.
+
+Vacant Properties
+
+Properties identified as vacant or underused.
+
+Construction Permits
+
+Recent development activity.
+
+311 Service Requests
+
+Public infrastructure and service complaints.
+
+These datasets should power the core map layers.
+
+Priority 2 — OpenStreetMap / Overpass API
+
+Use when official city datasets are missing or incomplete.
+
+Use for:
+
+parks
+
+schools
+
+bus stops
+
+parking
+
+government buildings
+
+hospitals / clinics
+
+businesses
+
+civic amenities
+
+Use to power:
+
+park gaps
+
+amenity access
+
+place activity
+
+public-space suitability
+
+If parcel polygons are unavailable, OSM markers are acceptable.
+
+Priority 3 — U.S. Census / ACS API
+
+Use for community context and scoring.
+
+Fields to collect:
+
+poverty rate
+
+population density
+
+housing vacancy
+
+median income
+
+census tract identifiers
+
+These should power the community need layer and metric cards.
+
+Priority 4 — Alabama Transportation / Infrastructure Sources
+
+Look for:
+
+ALDOT GIS
+
+road layers
+
+transportation projects
+
+transit stops
+
+Use for:
+
+infrastructure readiness layer
+
+accessibility scoring
+
+Priority 5 — Alabama / City Open Data
+
+Use only if:
+
+easily queryable
+
+relevant
+
+not overly complex
+
+Examples:
+
+public works
+
+municipal facilities
+
+development activity
+
+Priority 6 — Bright Data MCP (Enrichment Only)
+
+Bright Data MCP is not used for map data.
+
+It is used only for external context enrichment.
+
+Use it to:
+
+search redevelopment news
+
+scrape supporting sources
+
+extract context
+
+generate insights
+
+provide citations
+
+REQUIRED MAP LAYERS
+
+The interactive map should contain the following layers.
+
+Layer 1 — Parcels Base Layer
+
+Source: Montgomery Parcels dataset
+
+Used for:
+
+clickable parcels
+
+parcel IDs
+
+addresses
+
+map geometry
+
+Layer 2 — Zoning Compatibility
+
+Source: Zoning Lookup dataset
+
+Used for:
+
+zoning classification
+
+feasibility constraints
+
+Layer 3 — Redevelopment Opportunity
+
+Source: Vacant Properties dataset
+
+Used for:
+
+redevelopment scoring
+
+underused land detection
+
+Layer 4 — Development / Infrastructure
+
+Source: Construction Permits dataset
+
+Used for:
+
+development momentum
+
+investment signals
+
+Layer 5 — Community Issues
+
+Source: 311 Service Requests
+
+Used for:
+
+infrastructure stress
+
+civic repair needs
+
+METRIC CARD DATA
+
+Metric cards should use live datasets whenever possible.
+
+Cards include:
+
+Vacant Lots → Vacant Properties dataset
+High Priority Parcels → opportunity scoring
+Park Gaps → OSM + zoning context
+Active Projects → Construction Permits
+
+Census metrics remain:
+
+vacancy rate
+
+poverty rate
+
+median income
+
+If metric cards are already implemented, verify they are correct before changing them.
+
+SERVER DATA PIPELINE
+
+Create or reuse a unified API endpoint such as:
+
+/api/datasets
+
+This endpoint should:
+
+fetch parcels
+
+fetch zoning
+
+fetch vacant properties
+
+fetch permits
+
+fetch 311
+
+fetch census
+
+normalize datasets
+
+return unified results to the UI
+
+If this pipeline or part of it already exists:
+
+verify it first
+
+extend it
+
+do not duplicate it
+
+NORMALIZED DATA MODEL
+
+All datasets should be normalized.
+
+Parcel object:
+
+id
+parcel_id
+name
+address
+lat
+lng
+zoning
+vacancy_status
+permit_activity
+service_request_count
+opportunity_score
+recommended_use
+dataset_source
+dataset_url
+is_live
+
+Infrastructure object:
+
+id
+type
+status
+lat
+lng
+source
+dataset_url
+
+If equivalent types/models already exist, reuse them rather than redefining them.
+
+PERFORMANCE RULES
+
+Live data must not slow the map.
+
+Implement:
+
+Server caching
+
+Parcels → 1 hour
+Zoning → 1 hour
+Vacant properties → 30 min
+Permits → 15 min
+311 → 10 min
+Census → 24 hours
+MCP enrichment → 20 min per parcel
+
+Geometry simplification
+
+Do not render heavy polygons for the entire city.
+
+Use:
+
+parcel centroids
+
+simplified shapes
+
+bounding box loading
+
+Lazy loading
+
+Load full parcel metadata only after click.
+
+MCP ENRICHMENT SYSTEM
+
+Bright Data MCP should perform parcel-specific research.
+
+Example query:
+
+"{parcel_address} Montgomery Alabama redevelopment"
+
+Steps:
+
+build query from parcel fields
+
+run MCP search_engine
+
+scrape sources if needed
+
+summarize insights
+
+return citations
+
+If MCP enrichment is already implemented:
+
+verify that it uses selected parcel context
+
+verify that citations display correctly
+
+only improve missing parts
+
+Do not rebuild the enrichment flow if it already works.
+
+CITATION REQUIREMENTS
+
+Every external insight must include sources.
+
+Example UI:
+
+External Context (Bright Data MCP)
+
+• Downtown revitalization activity reported nearby
+• Business corridor development expanding
+
+Sources:
+
+montgomeryal.gov
+
+adeca.alabama.gov
+
+data.census.gov
+
+Never fabricate citations.
+
+If citation rendering already exists, verify it instead of replacing it.
+
+FALLBACK STRATEGY
+
+If a live dataset fails:
+
+use fallback JSON
+
+mark it as fallback in UI
+
+log the error
+
+keep the app running
+
+The demo must never break.
+
+If fallback behavior already exists, verify it works and preserve it.
+
+FILE STRUCTURE TARGET
+
+Reuse existing files if already present.
+
+Only add missing modules if necessary.
+
+Example target structure:
+
+app/
+  api/
+    datasets/route.ts
+    enrich/route.ts
+
+components/
+  CityMap.tsx
+  LayerControls.tsx
+  ParcelDetailPanel.tsx
+  MetricCards.tsx
+  CopilotPanel.tsx
+  SummaryPanel.tsx
+
+lib/
+  datasets/
+    montgomeryParcels.ts
+    zoning.ts
+    vacantProperties.ts
+    permits.ts
+    serviceRequests.ts
+    census.ts
+    normalize.ts
+  mcpClient.ts
+  enrichment.ts
+  scoring.ts
+
+Do not create duplicates if similar files already exist.
+
+IMPLEMENTATION ORDER
+Phase 0 — Audit existing implementation
+
+Before coding, check and verify:
+
+map
+
+layers
+
+parcel click flow
+
+enrichment flow
+
+citations
+
+metric cards
+
+summary panel
+
+data pipeline
+
+caching/fallback logic
+
+Document what already works.
+
+Phase 1
+
+Connect Montgomery Parcels dataset
+
+Phase 2
+
+Add Zoning Lookup
+
+Phase 3
+
+Add Vacant Properties
+
+Phase 4
+
+Add Construction Permits
+
+Phase 5
+
+Add 311 Service Requests
+
+Phase 6
+
+Normalize datasets
+
+Phase 7
+
+Replace map sample data
+
+Phase 8
+
+Keep parcel click + MCP enrichment
+
+Phase 9
+
+Add caching and data-source badges
+
+Only implement phases that are not already done correctly.
+
+WHAT I EXPECT BACK
+
+After implementing the upgrade, report:
+
+which existing features were already implemented and verified
+
+which features were modified
+
+which files were reused
+
+which files were added
+
+which datasets are truly live
+
+which layers still use fallback
+
+how parcels are loaded
+
+whether enrichment auto-triggers
+
+how citations appear
+
+performance precautions taken
+
+how to run/test in Replit
+
+FINAL RULE
+
+Do not duplicate existing work.
+Audit first, verify what already works, and only upgrade what is still sample-data driven, incomplete, or missing.
+
+Upgrade only the data architecture and missing live integrations, while keeping the existing interface polished and demo-ready

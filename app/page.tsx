@@ -8,7 +8,7 @@ import LayerControls from "@/app/components/LayerControls";
 import ParcelDetailPanel from "@/app/components/ParcelDetailPanel";
 import CopilotPanel from "@/app/components/CopilotPanel";
 import SummaryPanel from "@/app/components/SummaryPanel";
-import type { VacancyParcel, InfrastructureItem, ZoneArea, LayerName, LiveMetrics } from "@/app/lib/types";
+import type { VacancyParcel, InfrastructureItem, ZoneArea, ParkItem, LayerName, LiveMetrics } from "@/app/lib/types";
 
 import vacancyRaw from "@/app/data/vacancy_sample.json";
 import infraRaw from "@/app/data/infrastructure_sample.json";
@@ -26,8 +26,8 @@ const CityMap = dynamic(() => import("@/app/components/CityMap"), {
   ),
 });
 
-const parcels = vacancyRaw as VacancyParcel[];
-const infrastructure = infraRaw as InfrastructureItem[];
+const sampleParcels = vacancyRaw as VacancyParcel[];
+const sampleInfra = infraRaw as InfrastructureItem[];
 const zones = zonesRaw as ZoneArea[];
 
 export default function Dashboard() {
@@ -37,28 +37,49 @@ export default function Dashboard() {
   const [selectedParcel, setSelectedParcel] = useState<VacancyParcel | null>(null);
   const [highlightedParcelIds, setHighlightedParcelIds] = useState<string[]>([]);
   const [liveMetrics, setLiveMetrics] = useState<LiveMetrics | null>(null);
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
 
   const fallbackMetrics: LiveMetrics = useMemo(() => ({
-    vacantLots: parcels.length,
-    highPriority: parcels.filter((p) => p.priority === "high").length,
-    parkGaps: parcels.filter((p) =>
+    vacantLots: sampleParcels.length,
+    highPriority: sampleParcels.filter((p) => p.priority === "high").length,
+    parkGaps: sampleParcels.filter((p) =>
       p.recommended_use.toLowerCase().includes("park") ||
       p.recommended_use.toLowerCase().includes("garden") ||
       p.recommended_use.toLowerCase().includes("green")
     ).length,
-    activePermits: infrastructure.filter((i) => i.status === "active").length,
-    dataStatus: { parcels: "fallback", census: "fallback", osm: "fallback" },
+    activePermits: sampleInfra.filter((i) => i.status === "active").length,
+    dataStatus: {
+      parcels: "fallback",
+      census: "fallback",
+      osm: "fallback",
+      infrastructure: "fallback",
+      parks: "fallback",
+      permits: "fallback",
+    },
     fetchedAt: new Date().toISOString(),
   }), []);
 
   useEffect(() => {
     fetch("/api/datasets")
       .then((r) => r.json())
-      .then((data: LiveMetrics) => setLiveMetrics(data))
-      .catch(() => setLiveMetrics(null));
+      .then((data: LiveMetrics) => {
+        setLiveMetrics(data);
+        setLoadingMetrics(false);
+      })
+      .catch(() => {
+        setLiveMetrics(null);
+        setLoadingMetrics(false);
+      });
   }, []);
 
   const displayMetrics = liveMetrics ?? fallbackMetrics;
+
+  const displayInfra: InfrastructureItem[] =
+    liveMetrics?.liveInfrastructure && liveMetrics.liveInfrastructure.length > 0
+      ? liveMetrics.liveInfrastructure
+      : sampleInfra;
+
+  const displayParks: ParkItem[] = liveMetrics?.liveParks ?? [];
 
   function toggleLayer(layer: LayerName) {
     setActiveLayers((prev) => {
@@ -78,9 +99,10 @@ export default function Dashboard() {
         <div className="map-column">
           <LayerControls activeLayers={activeLayers} onToggle={toggleLayer} />
           <CityMap
-            parcels={parcels}
-            infrastructure={infrastructure}
+            parcels={sampleParcels}
+            infrastructure={displayInfra}
             zones={zones}
+            parks={displayParks}
             activeLayers={activeLayers}
             selectedParcelId={selectedParcel?.id}
             highlightedParcelIds={highlightedParcelIds}
@@ -91,14 +113,14 @@ export default function Dashboard() {
         <div className="right-column">
           <ParcelDetailPanel parcel={selectedParcel} />
           <CopilotPanel
-            parcels={parcels}
+            parcels={sampleParcels}
             selectedParcel={selectedParcel}
             onHighlight={setHighlightedParcelIds}
           />
         </div>
       </div>
 
-      <SummaryPanel parcels={parcels} liveMetrics={liveMetrics ?? fallbackMetrics} />
+      <SummaryPanel parcels={sampleParcels} liveMetrics={liveMetrics ?? fallbackMetrics} />
     </div>
   );
 }
