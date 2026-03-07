@@ -1,0 +1,482 @@
+Prompt2
+You are my senior full-stack engineer, civic-data architect, geospatial product builder, and AI agent integration lead.
+We already have a working MVP UI in Replit for:
+RevitaVibe Montgomery
+AI Civic Land Intelligence Platform
+The app already includes:
+•	interactive map
+•	layer toggles
+•	parcel detail panel
+•	AI Copilot panel
+•	mayor summary panel
+•	local sample JSON files
+Now I want you to upgrade the application to use real live datasets for Montgomery, Alabama, preserve the current polished UI, and implement automatic Bright Data MCP enrichment with visible citations.
+________________________________________
+VERY IMPORTANT LOCATION CORRECTION
+This entire project is for:
+Montgomery, Alabama
+Do not use Montgomery County, Maryland datasets as the primary live data source.
+That means:
+•	do not use data.montgomerycountymd.gov as the main source
+•	do not use data-mcplanning.hub.arcgis.com as the main source
+•	do not use Maryland planning/GIS data as the base of the product
+If any Maryland dataset remains in the codebase from prior experiments, remove it from the primary data flow and document that it was excluded due to geography mismatch.
+We need Montgomery, Alabama live datasets only, wherever possible.
+________________________________________
+PRIMARY GOAL
+Upgrade the existing app so it works like this:
+User clicks parcel / area on map
+        ↓
+selectedParcel state updates
+        ↓
+Parcel detail panel renders immediately
+        ↓
+MCP enrichment auto-triggers in background
+        ↓
+Loading state shown in panel
+        ↓
+MCP returns external context
+        ↓
+Panel updates with enriched insight + citations
+The key requirements are:
+1.	replace or augment mock/sample data with real live Montgomery, Alabama datasets
+2.	preserve the current interactive UI and layout
+3.	add citations / sources for both live data and MCP enrichment
+4.	keep the app stable even if MCP or a live dataset fails
+5.	prefer live data only for the main app wherever practical
+6.	if any live source fails, degrade gracefully without breaking the demo
+________________________________________
+IMPORTANT PRODUCT CONTEXT
+Challenge:
+Innovate on what the city can do with its own land, abandoned spaces, and underdeveloped areas to enhance infrastructure and public spaces.
+The app already has these UI sections and they must remain:
+•	Top Title Bar
+•	Top Metric Cards
+•	Interactive City Map
+•	Map Layers / Overlays
+•	Parcel Detail Panel
+•	AI Urban Planning Copilot
+•	Suggested Sample Questions
+•	Map Highlight Response from Copilot
+•	Mayor Report Preview / Summary Panel
+Do not break the current UI structure.
+Do not replace the current app with a generic scraper page.
+________________________________________
+LIVE DATA REQUIREMENT
+Use live datasets only for the main data pipeline wherever possible.
+The current local sample JSON files may remain only as a fallback safety net, but the goal is:
+Primary data flow = live Montgomery, Alabama data
+Use local JSON only if:
+•	a live endpoint is unavailable
+•	rate-limited
+•	temporarily failing
+•	needed as a last-resort fallback for demo stability
+Clearly indicate in code and in the UI which layers are:
+•	live
+•	fallback
+•	enriched
+________________________________________
+LIVE DATA SOURCES TO PRIORITIZE FOR MONTGOMERY, ALABAMA
+Please structure the app to use real Alabama/Montgomery live data from practical sources such as:
+1. Alabama Open Data / state or local government data
+Use official Alabama or Montgomery-area open data endpoints where practical.
+Potential categories:
+•	infrastructure
+•	roads
+•	public works
+•	transit
+•	municipal boundaries
+•	public facilities
+•	development indicators
+2. Montgomery, Alabama GIS / city GIS / ArcGIS services
+Use real parcel / zoning / land use / district / boundary / city GIS sources for Montgomery, Alabama where available.
+Prioritize:
+•	parcels
+•	zoning
+•	land use
+•	city districts
+•	planning boundaries
+3. ALDOT / transportation GIS / transit-related data
+Use transportation and infrastructure layers where practical.
+Potential uses:
+•	roads
+•	transportation access
+•	projects
+•	mobility readiness
+4. US Census / ACS APIs
+Use for:
+•	poverty
+•	population density
+•	vacancy
+•	median income
+•	housing characteristics
+This is highly valuable for a community need layer.
+5. OpenStreetMap / Overpass API
+Use for live spatial features such as:
+•	parks
+•	schools
+•	bus stops
+•	parking
+•	businesses
+•	amenities
+•	public facilities
+This is very useful for:
+•	park gaps
+•	amenity access
+•	place activity
+•	neighborhood vitality
+________________________________________
+DATASET STRATEGY
+The app should use a live geospatial + civic intelligence pipeline.
+The strongest practical live layers for Montgomery, Alabama are:
+Layer A — Redevelopment Opportunity / Need Layer
+Use live signals from:
+•	census / vacancy / poverty / housing
+•	or municipal underuse / public infrastructure proxy
+•	or other available live indicators
+Layer B — Zoning / Land Use Layer
+Use real Montgomery, Alabama zoning / parcel / land-use data if available.
+Layer C — Infrastructure / Readiness Layer
+Use roads / transit / projects / mobility context from Alabama or city GIS sources.
+Layer D — Community Activity / Amenity Layer
+Use OpenStreetMap / live place data to identify:
+•	parks
+•	business clusters
+•	transit access
+•	public facility access
+Stretch Layer E — Risk / Constraint Layer
+If feasible, add:
+•	hazards
+•	flood risk
+•	crime / safety context
+•	other real constraints
+________________________________________
+REQUIRED IMPLEMENTATION STRATEGY
+Use a hybrid architecture with this rule:
+Primary = live data
+Map and scoring should prefer live data.
+Fallback = local sample JSON
+Only if needed for resilience.
+Enrichment = Bright Data MCP
+Use MCP for external context and supporting evidence.
+Do not make the whole UI depend on any single external service.
+________________________________________
+REQUIRED FILE / ARCHITECTURE CHANGES
+Please add or refactor toward this:
+app/
+  page.tsx
+  api/
+    enrich/route.ts
+    datasets/route.ts   (optional if useful)
+
+components/
+  HeaderBar.tsx
+  MetricCards.tsx
+  CityMap.tsx
+  LayerControls.tsx
+  ParcelDetailPanel.tsx
+  CopilotPanel.tsx
+  SummaryPanel.tsx
+
+data/
+  vacancy_sample.json
+  infrastructure_sample.json
+  zoning_sample.json
+
+lib/
+  types.ts
+  scoring.ts
+  copilot.ts
+  mcpClient.ts
+  enrichment.ts
+  datasets/
+    alabamaOpenData.ts
+    montgomeryGIS.ts
+    transportation.ts
+    census.ts
+    osm.ts
+    normalize.ts
+If the existing structure is already close, adapt intelligently.
+________________________________________
+DATA FETCHING REQUIREMENTS
+Create a proper data abstraction layer.
+lib/datasets/alabamaOpenData.ts
+Should fetch/parse practical Alabama or Montgomery-area official datasets.
+lib/datasets/montgomeryGIS.ts
+Should fetch/parse Montgomery, Alabama GIS / parcel / zoning / land use layers where available.
+lib/datasets/transportation.ts
+Should fetch/parse transportation / mobility / project / road context layers.
+lib/datasets/census.ts
+Should fetch/parse Census / ACS data for need / equity / housing context.
+lib/datasets/osm.ts
+Should fetch/parse OpenStreetMap / Overpass live amenity and public-facility data.
+lib/datasets/normalize.ts
+Normalize all live sources into a common structure for the UI.
+________________________________________
+NORMALIZED INTERNAL DATA MODEL
+Normalize live or fallback data into structures like:
+Parcel / Opportunity Item
+•	id
+•	name
+•	address
+•	lat
+•	lng
+•	source
+•	sourceType
+•	dataset_name
+•	dataset_url
+•	citation_url
+•	zoning
+•	priority
+•	opportunity_score
+•	recommended_use
+•	infrastructure_context
+•	community_need_context
+•	activity_context
+•	is_live
+Infrastructure Item
+•	id
+•	name
+•	lat
+•	lng
+•	type
+•	status
+•	source
+•	dataset_name
+•	dataset_url
+•	citation_url
+•	is_live
+________________________________________
+MAP REQUIREMENTS
+Keep the current interactive map and layer toggles, but update the data pipeline to prefer live Montgomery, Alabama data.
+The map must still support:
+•	zoom
+•	pan
+•	clickable markers or shapes
+•	multiple toggleable layers
+•	highlighted parcels/areas from Copilot
+Layers to preserve
+1.	Vacancy / Redevelopment Priority
+2.	Zoning Compatibility
+3.	Infrastructure / Readiness
+4.	Community Need / Amenity / Park Gap
+5.	Stretch: Risk / constraint if feasible
+________________________________________
+REVISED PARCEL / AREA CLICK WORKFLOW (VERY IMPORTANT)
+Implement this exact workflow:
+User clicks parcel / area on map
+        ↓
+selectedParcel state updates
+        ↓
+Parcel detail panel renders immediately using live map data
+        ↓
+MCP enrichment auto-triggers in background
+        ↓
+Loading state shown inside the panel
+        ↓
+MCP returns external context
+        ↓
+Panel updates with enriched insight + citations
+Important:
+•	the panel must render immediately
+•	enrichment must not block the panel
+•	if enrichment fails, the panel still works
+________________________________________
+PARCEL DETAIL PANEL REQUIREMENTS
+When a parcel / area is clicked, the panel must immediately show:
+•	Parcel / Area name or ID
+•	address if available
+•	city / dataset source label
+•	dataset name
+•	zoning
+•	opportunity score
+•	recommended use
+•	infrastructure context
+•	community need or amenity context
+•	whether this record is from live data or fallback
+Then below that show a section:
+External Context (Bright Data MCP)
+States:
+•	loading
+•	success
+•	failed fallback
+When successful, show:
+•	2–4 short enrichment bullets
+•	citations / source links
+•	updated timestamp
+•	refresh button
+________________________________________
+CITATION REQUIREMENTS
+This is critical.
+Whenever live datasets or MCP enrichment contribute information, show citations in the UI and preserve them in the data model.
+For live dataset citations
+Show:
+•	dataset name
+•	source label
+•	source URL if possible
+•	optional “live” badge
+Example:
+•	Source: Montgomery, Alabama GIS — Zoning Layer
+•	Citation: [Open dataset]
+or
+•	Source: U.S. Census ACS
+•	Citation: [Census API]
+For MCP enrichment citations
+Show:
+•	source title
+•	source URL
+•	source domain if possible
+Example UI:
+External Context (Bright Data MCP)
+
+• Recent redevelopment activity mentioned near this corridor
+• Nearby business activity appears to be increasing
+
+Sources:
+1. Montgomery Advertiser — example.com
+2. Alabama Business Journal — example.org
+Do not fabricate citations.
+If MCP returns no sources, say so clearly.
+________________________________________
+BRIGHT DATA MCP REQUIREMENTS
+Use Bright Data MCP as the enrichment/research layer, not as the main map renderer.
+Use a lightweight abstraction such as:
+•	lib/mcpClient.ts
+•	lib/enrichment.ts
+Support a workflow like:
+selectedParcel
+    ↓
+build search query from parcel name/address/neighborhood/zoning/city
+    ↓
+Bright Data MCP search_engine
+    ↓
+optional scrape_as_markdown on top result(s)
+    ↓
+summarize into bullets
+    ↓
+return bullets + citations
+________________________________________
+MCP QUERY STRATEGY
+Build parcel-specific enrichment queries dynamically using selected parcel context.
+Examples:
+•	"100 Commerce St Montgomery Alabama redevelopment"
+•	"Downtown Montgomery Alabama public space revitalization"
+•	"Commerce Street Montgomery AL business growth planning"
+•	"nearby development news 100 Commerce St Montgomery AL"
+Use:
+•	selected parcel name
+•	address
+•	neighborhood if available
+•	zoning
+•	city = Montgomery, Alabama
+Do not use a generic static query.
+________________________________________
+FALLBACK BEHAVIOR
+If live data fetch fails:
+•	use local fallback JSON only for that affected layer
+•	keep the map working
+•	show a small “fallback data” note if appropriate
+If MCP enrichment fails:
+•	parcel panel still renders
+•	show:
+o	“No live enrichment available right now”
+o	no broken state
+o	optional retry / refresh button
+The app must remain demoable.
+________________________________________
+METRIC CARD UPGRADE
+Update the 4 top metric cards so they prefer live Montgomery, Alabama data when available.
+Cards:
+•	Vacant Lots / Opportunity Sites
+•	High Priority Parcels
+•	Park Gaps / Park-Ready Sites
+•	Active Projects / Active Permits
+If only some live datasets are available, compute from what is available and document the logic.
+Show freshness/source notes if helpful.
+________________________________________
+COPILOT UPGRADE
+Keep the Copilot working with the current 3 anchor questions:
+1.	Where should Montgomery build a new community park?
+2.	Which neighborhoods have the highest redevelopment opportunity?
+3.	What’s the best use for this vacant lot?
+Upgrade it so:
+•	it uses normalized live Montgomery, Alabama data where available
+•	it can optionally include MCP enrichment support
+•	it returns parcel/area IDs, scores, and reasons
+•	it highlights returned parcels/areas on the map
+•	if MCP is used in a response, include citations
+________________________________________
+MAYOR SUMMARY PANEL UPGRADE
+Keep the summary panel and improve it to show:
+•	top 3 opportunities
+•	recommended use
+•	source-aware insights
+•	export summary button (UI-only is okay)
+•	small data freshness note
+Example:
+•	Base map data: live / fallback
+•	MCP external context: updated timestamp
+________________________________________
+IMPLEMENTATION ORDER
+Do this in order:
+Phase 1
+Inspect the current working UI and preserve it.
+Phase 2
+Add live Alabama/Montgomery dataset adapters and normalization layer.
+Phase 3
+Replace current map data source with:
+•	live Montgomery, Alabama data where possible
+•	fallback to sample JSON only if needed
+Phase 4
+Preserve map layer toggles and click interactions.
+Phase 5
+Implement immediate parcel-detail render + auto enrichment loading state.
+Phase 6
+Add MCP enrichment route/logic with citations.
+Phase 7
+Upgrade Copilot to use normalized live data + optional enrichment.
+Phase 8
+Upgrade summary panel and metric cards using live data.
+Phase 9
+Polish and clearly document what is live vs fallback.
+________________________________________
+WHAT TO PRESERVE
+Please preserve:
+•	the current polished dashboard look
+•	map interaction
+•	layer toggles
+•	parcel detail layout
+•	Copilot panel
+•	bottom summary panel
+Do not replace the app with a generic scraper page.
+________________________________________
+WHAT I WANT BACK AFTER YOU UPDATE IT
+After implementation, show me:
+1.	which files you changed / added
+2.	which data sources are now truly live and for Montgomery, Alabama
+3.	which data still comes from fallback JSON
+4.	whether the map is using real live data
+5.	whether parcel click auto-triggers enrichment
+6.	what MCP enrichment is doing
+7.	how citations are displayed
+8.	what remains mocked / stubbed
+9.	any blockers or source limitations
+10.	exactly how to run/test in Replit
+________________________________________
+ALSO BE A CRITIC OF YOUR OWN PLAN
+Before coding, briefly review critically:
+•	which live Montgomery, Alabama datasets are realistic to integrate quickly
+•	what you are intentionally simplifying
+•	what risks remain
+•	how you will preserve demo stability
+Then proceed with implementation.
+________________________________________
+BEGIN NOW
+Start by:
+1.	inspecting the current working UI
+2.	keeping the current components intact
+3.	adding Alabama/Montgomery live dataset adapters
+4.	preserving the map behavior
+5.	implementing the revised parcel-selection auto-enrichment flow with citations
+Do not stop at planning. Build the upgrade.
+

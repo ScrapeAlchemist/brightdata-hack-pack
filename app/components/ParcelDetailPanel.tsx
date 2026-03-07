@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import type { VacancyParcel } from "@/app/lib/types";
+import { useState, useEffect } from "react";
+import type { VacancyParcel, EnrichmentResult } from "@/app/lib/types";
 import { getScoreColor, getScoreLabel } from "@/app/lib/scoring";
 
 interface Props {
@@ -10,30 +10,81 @@ interface Props {
 
 export default function ParcelDetailPanel({ parcel }: Props) {
   const [enriching, setEnriching] = useState(false);
-  const [enrichNote, setEnrichNote] = useState<string | null>(null);
+  const [enrichResult, setEnrichResult] = useState<EnrichmentResult | null>(null);
+  const [enrichError, setEnrichError] = useState<string | null>(null);
 
-  async function handleEnrich() {
+  useEffect(() => {
+    if (!parcel) {
+      setEnrichResult(null);
+      setEnrichError(null);
+      return;
+    }
+
+    setEnrichResult(null);
+    setEnrichError(null);
+    setEnriching(true);
+
+    const controller = new AbortController();
+
+    fetch("/api/enrich", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        parcel: {
+          id: parcel.id,
+          name: parcel.name,
+          address: parcel.address,
+          neighborhood: parcel.neighborhood,
+          zoning: parcel.zoning,
+          priority: parcel.priority,
+          opportunity_score: parcel.opportunity_score,
+          recommended_use: parcel.recommended_use,
+          infrastructure_context: parcel.infrastructure_context,
+        },
+      }),
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((data: EnrichmentResult) => {
+        setEnrichResult(data);
+        setEnriching(false);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          setEnrichError("Enrichment unavailable right now.");
+          setEnriching(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [parcel?.id]);
+
+  async function handleRefresh() {
     if (!parcel) return;
     setEnriching(true);
-    setEnrichNote(null);
-
+    setEnrichResult(null);
+    setEnrichError(null);
     try {
       const res = await fetch("/api/enrich", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tool: "search_engine",
-          params: { query: `${parcel.address} Montgomery Alabama redevelopment`, parcelId: parcel.id },
+          parcel: {
+            id: parcel.id,
+            name: parcel.name,
+            address: parcel.address,
+            neighborhood: parcel.neighborhood,
+            zoning: parcel.zoning,
+            priority: parcel.priority,
+            opportunity_score: parcel.opportunity_score,
+            recommended_use: parcel.recommended_use,
+            infrastructure_context: parcel.infrastructure_context,
+          },
         }),
       });
-      const data = await res.json();
-      if (data.source === "brightdata" && data.data) {
-        setEnrichNote(`Live data retrieved via Bright Data: ${data.data.slice(0, 200)}...`);
-      } else {
-        setEnrichNote("Bright Data MCP enrichment ready — add BRIGHTDATA_API_KEY to Secrets to enable live web context for this parcel.");
-      }
+      setEnrichResult(await res.json());
     } catch {
-      setEnrichNote("Enrichment unavailable. Add BRIGHTDATA_API_KEY to enable.");
+      setEnrichError("Enrichment unavailable. Try again.");
     } finally {
       setEnriching(false);
     }
@@ -44,7 +95,9 @@ export default function ParcelDetailPanel({ parcel }: Props) {
       <div className="panel parcel-panel parcel-empty">
         <div className="parcel-empty-icon">📍</div>
         <div className="parcel-empty-title">Parcel Detail</div>
-        <div className="parcel-empty-desc">Click any marker on the map to view parcel details and redevelopment analysis.</div>
+        <div className="parcel-empty-desc">
+          Click any marker on the map to view parcel details and get automatic AI-powered enrichment.
+        </div>
       </div>
     );
   }
@@ -54,23 +107,43 @@ export default function ParcelDetailPanel({ parcel }: Props) {
   const priorityColors: Record<string, string> = { high: "#dc2626", medium: "#ea580c", low: "#ca8a04" };
   const pColor = priorityColors[parcel.priority];
 
+  const sourceLabel = parcel.is_live ? "live" : "sample";
+  const sourceColors = { live: "#16a34a", sample: "#64748b", fallback: "#64748b" };
+
   return (
     <div className="panel parcel-panel">
       <div className="panel-header">
         <div className="panel-title">📍 Parcel Detail</div>
-        <span className="badge" style={{ background: pColor + "20", color: pColor }}>
-          {parcel.priority.toUpperCase()} PRIORITY
-        </span>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <span className="data-badge" style={{ background: sourceColors[sourceLabel] + "20", color: sourceColors[sourceLabel] }}>
+            {sourceLabel === "live" ? "🟢 live" : "📂 sample"}
+          </span>
+          <span className="badge" style={{ background: pColor + "20", color: pColor }}>
+            {parcel.priority.toUpperCase()}
+          </span>
+        </div>
       </div>
 
       <div className="parcel-name">{parcel.name}</div>
       <div className="parcel-address">{parcel.address}</div>
-      <div className="parcel-neighborhood">Neighborhood: {parcel.neighborhood}</div>
+      <div className="parcel-neighborhood">
+        {parcel.neighborhood} · {parcel.dataset_name ?? "Montgomery, AL Planning Dataset"}
+      </div>
+
+      {parcel.citation_url && (
+        <div className="parcel-citation">
+          <a href={parcel.citation_url} target="_blank" rel="noopener noreferrer">
+            📎 View source dataset
+          </a>
+        </div>
+      )}
 
       <div className="score-bar-wrap">
         <div className="score-bar-header">
           <span>Opportunity Score</span>
-          <span style={{ color: scoreColor, fontWeight: 700 }}>{parcel.opportunity_score}/100 — {scoreLabel}</span>
+          <span style={{ color: scoreColor, fontWeight: 700 }}>
+            {parcel.opportunity_score}/100 — {scoreLabel}
+          </span>
         </div>
         <div className="score-bar-bg">
           <div className="score-bar-fill" style={{ width: `${parcel.opportunity_score}%`, background: scoreColor }} />
@@ -88,30 +161,97 @@ export default function ParcelDetailPanel({ parcel }: Props) {
         </div>
         <div className="parcel-field" style={{ gridColumn: "1 / -1" }}>
           <div className="field-label">Recommended Use</div>
-          <div className="field-value" style={{ color: "#16a34a", fontWeight: 600 }}>{parcel.recommended_use}</div>
+          <div className="field-value" style={{ color: "#16a34a", fontWeight: 600 }}>
+            {parcel.recommended_use}
+          </div>
         </div>
         <div className="parcel-field" style={{ gridColumn: "1 / -1" }}>
           <div className="field-label">Infrastructure Context</div>
-          <div className="field-value" style={{ fontSize: "12px", color: "#475569" }}>{parcel.infrastructure_context}</div>
+          <div className="field-value" style={{ fontSize: "11px", color: "#475569" }}>
+            {parcel.infrastructure_context}
+          </div>
         </div>
+        {parcel.community_need_context && (
+          <div className="parcel-field" style={{ gridColumn: "1 / -1" }}>
+            <div className="field-label">Community Context</div>
+            <div className="field-value" style={{ fontSize: "11px", color: "#475569" }}>
+              {parcel.community_need_context}
+            </div>
+          </div>
+        )}
       </div>
 
-      <button
-        onClick={handleEnrich}
-        disabled={enriching}
-        className="enrich-btn"
-      >
-        {enriching ? "⏳ Enriching..." : "⚡ Enrich with Bright Data MCP"}
-      </button>
-
-      {enrichNote && (
-        <div className="enrich-note">
-          <div className="enrich-note-label">🔍 MCP Enrichment</div>
-          <div className="enrich-note-text">{enrichNote}</div>
+      <div className="enrich-section">
+        <div className="enrich-section-header">
+          <div className="enrich-section-title">
+            ⚡ External Context
+            <span className="enrich-powered">via Bright Data MCP</span>
+          </div>
+          {!enriching && (
+            <button onClick={handleRefresh} className="refresh-btn" title="Refresh enrichment">
+              ↻
+            </button>
+          )}
         </div>
-      )}
 
-      <div className="parcel-id">Parcel ID: {parcel.id} · Updated: {new Date().toLocaleDateString()}</div>
+        {enriching && (
+          <div className="enrich-loading">
+            <div className="enrich-spinner" />
+            <span>Searching live sources for {parcel.name}…</span>
+          </div>
+        )}
+
+        {!enriching && enrichError && (
+          <div className="enrich-error">
+            <div>No live enrichment available right now.</div>
+            <button onClick={handleRefresh} className="retry-btn">Retry</button>
+          </div>
+        )}
+
+        {!enriching && enrichResult && (
+          <div className="enrich-result">
+            <div className="enrich-source-badge">
+              {enrichResult.source === "brightdata_openai" && <span className="live-badge">🟢 Bright Data + AI</span>}
+              {enrichResult.source === "brightdata" && <span className="live-badge">🟢 Bright Data</span>}
+              {enrichResult.source === "openai" && <span className="live-badge">🟡 AI Analysis</span>}
+              {enrichResult.source === "local" && <span className="local-badge">📂 Local Analysis</span>}
+              <span className="enrich-ts">
+                {new Date(enrichResult.timestamp).toLocaleTimeString()}
+              </span>
+            </div>
+
+            <ul className="enrich-bullets">
+              {enrichResult.bullets.map((b, i) => (
+                <li key={i}>{b}</li>
+              ))}
+            </ul>
+
+            {enrichResult.citations.length > 0 && (
+              <div className="citations-block">
+                <div className="citations-title">Sources</div>
+                {enrichResult.citations.map((c, i) => (
+                  <div key={i} className="citation-item">
+                    <span className="citation-num">{i + 1}.</span>
+                    <a href={c.url} target="_blank" rel="noopener noreferrer" className="citation-link">
+                      {c.title}
+                    </a>
+                    <span className="citation-domain">— {c.domain}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {enrichResult.citations.length === 0 && (
+              <div className="no-citations">No external citations available for this query.</div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="parcel-id">
+        Parcel ID: {parcel.id} · {parcel.source ?? "Montgomery, AL Planning Dataset"} ·{" "}
+        {new Date().toLocaleDateString()}
+      </div>
     </div>
   );
 }

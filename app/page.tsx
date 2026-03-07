@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import HeaderBar from "@/app/components/HeaderBar";
 import MetricCards from "@/app/components/MetricCards";
@@ -8,7 +8,7 @@ import LayerControls from "@/app/components/LayerControls";
 import ParcelDetailPanel from "@/app/components/ParcelDetailPanel";
 import CopilotPanel from "@/app/components/CopilotPanel";
 import SummaryPanel from "@/app/components/SummaryPanel";
-import type { VacancyParcel, InfrastructureItem, ZoneArea, LayerName } from "@/app/lib/types";
+import type { VacancyParcel, InfrastructureItem, ZoneArea, LayerName, LiveMetrics } from "@/app/lib/types";
 
 import vacancyRaw from "@/app/data/vacancy_sample.json";
 import infraRaw from "@/app/data/infrastructure_sample.json";
@@ -36,13 +36,29 @@ export default function Dashboard() {
   );
   const [selectedParcel, setSelectedParcel] = useState<VacancyParcel | null>(null);
   const [highlightedParcelIds, setHighlightedParcelIds] = useState<string[]>([]);
+  const [liveMetrics, setLiveMetrics] = useState<LiveMetrics | null>(null);
 
-  const metrics = useMemo(() => ({
+  const fallbackMetrics: LiveMetrics = useMemo(() => ({
     vacantLots: parcels.length,
     highPriority: parcels.filter((p) => p.priority === "high").length,
-    parkGaps: parcels.filter((p) => p.recommended_use.toLowerCase().includes("park") || p.recommended_use.toLowerCase().includes("garden") || p.recommended_use.toLowerCase().includes("green")).length,
+    parkGaps: parcels.filter((p) =>
+      p.recommended_use.toLowerCase().includes("park") ||
+      p.recommended_use.toLowerCase().includes("garden") ||
+      p.recommended_use.toLowerCase().includes("green")
+    ).length,
     activePermits: infrastructure.filter((i) => i.status === "active").length,
+    dataStatus: { parcels: "fallback", census: "fallback", osm: "fallback" },
+    fetchedAt: new Date().toISOString(),
   }), []);
+
+  useEffect(() => {
+    fetch("/api/datasets")
+      .then((r) => r.json())
+      .then((data: LiveMetrics) => setLiveMetrics(data))
+      .catch(() => setLiveMetrics(null));
+  }, []);
+
+  const displayMetrics = liveMetrics ?? fallbackMetrics;
 
   function toggleLayer(layer: LayerName) {
     setActiveLayers((prev) => {
@@ -56,7 +72,7 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
       <HeaderBar />
-      <MetricCards metrics={metrics} />
+      <MetricCards metrics={displayMetrics} />
 
       <div className="main-content">
         <div className="map-column">
@@ -82,7 +98,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <SummaryPanel parcels={parcels} />
+      <SummaryPanel parcels={parcels} liveMetrics={liveMetrics ?? fallbackMetrics} />
     </div>
   );
 }

@@ -313,7 +313,128 @@ html, body {
 .opp-use { font-size: 12px; color: #4ade80; font-weight: 600; margin-bottom: 2px; }
 .opp-score { font-size: 11px; font-weight: 600; }
 
-.summary-footer { font-size: 10px; color: #475569; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; }
+
+/* ─── Data source badges ─────────────────────────── */
+.data-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 99px; letter-spacing: 0.3px;
+}
+.metric-source { font-size: 10px; margin-top: 3px; }
+
+/* ─── Parcel citation link ───────────────────────── */
+.parcel-citation { margin-bottom: 8px; }
+.parcel-citation a { font-size: 11px; color: #0d9488; text-decoration: none; }
+.parcel-citation a:hover { text-decoration: underline; }
+
+/* ─── Enrichment section ─────────────────────────── */
+.enrich-section {
+  border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 12px; margin-bottom: 10px; background: #f8fafc;
+}
+.enrich-section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.enrich-section-title {
+  font-size: 12px; font-weight: 700; color: #0f172a;
+  display: flex; align-items: center; gap: 6px;
+}
+.enrich-powered {
+  font-size: 10px; font-weight: 500; color: #0d9488;
+  background: #f0fdfa; border: 1px solid #99f6e4;
+  padding: 1px 6px; border-radius: 99px;
+}
+.refresh-btn {
+  background: none; border: 1px solid #e2e8f0; border-radius: 6px;
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; color: #64748b; transition: all 0.15s;
+}
+.refresh-btn:hover { border-color: #0d9488; color: #0d9488; }
+
+.enrich-loading {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #64748b; padding: 6px 0;
+}
+.enrich-spinner {
+  width: 14px; height: 14px; border: 2px solid #e2e8f0;
+  border-top-color: #0d9488; border-radius: 50%;
+  animation: spin 0.7s linear infinite; flex-shrink: 0;
+}
+
+.enrich-error {
+  font-size: 11px; color: #9ca3af; display: flex;
+  align-items: center; gap: 8px; padding: 4px 0;
+}
+.retry-btn {
+  background: none; border: 1px solid #e2e8f0; border-radius: 6px;
+  padding: 2px 8px; font-size: 11px; cursor: pointer; color: #64748b;
+}
+.retry-btn:hover { border-color: #0d9488; color: #0d9488; }
+
+.enrich-result {}
+.enrich-source-badge {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px; flex-wrap: wrap;
+}
+.live-badge {
+  font-size: 10px; font-weight: 700; color: #059669;
+  background: #ecfdf5; padding: 2px 7px; border-radius: 99px;
+  border: 1px solid #a7f3d0;
+}
+.local-badge {
+  font-size: 10px; font-weight: 600; color: #64748b;
+  background: #f1f5f9; padding: 2px 7px; border-radius: 99px;
+  border: 1px solid #e2e8f0;
+}
+.enrich-ts { font-size: 10px; color: #94a3b8; }
+
+.enrich-bullets {
+  list-style: none; padding: 0; margin: 0 0 10px 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.enrich-bullets li {
+  font-size: 11px; color: #1e293b; line-height: 1.5;
+  padding-left: 12px; position: relative;
+}
+.enrich-bullets li::before {
+  content: "•"; position: absolute; left: 0;
+  color: #0d9488; font-weight: 700;
+}
+
+/* ─── Citations block ────────────────────────────── */
+.citations-block {
+  border-top: 1px solid #e2e8f0; padding-top: 8px;
+}
+.citations-title {
+  font-size: 10px; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px;
+}
+.citation-item {
+  display: flex; align-items: baseline; gap: 4px;
+  margin-bottom: 4px; flex-wrap: wrap;
+}
+.citation-num { font-size: 10px; color: #94a3b8; flex-shrink: 0; }
+.citation-link {
+  font-size: 11px; color: #2563eb; text-decoration: none; font-weight: 500;
+}
+.citation-link:hover { text-decoration: underline; }
+.citation-domain { font-size: 10px; color: #94a3b8; }
+.no-citations { font-size: 11px; color: #9ca3af; font-style: italic; }
+
+/* ─── Summary data status ────────────────────────── */
+.summary-data-status {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 12px; margin-top: 4px;
+}
+.data-status-row {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 8px; align-items: center;
+}
+.data-status-label { font-size: 11px; color: #94a3b8; font-weight: 600; }
+.data-status-val { font-size: 11px; }
+.status-live { color: #4ade80; }
+.status-fallback { color: #94a3b8; }
+.summary-footer { font-size: 10px; color: #475569; }
 
 /* ─── Leaflet overrides ──────────────────────────── */
 .leaflet-container { font-family: system-ui, sans-serif !important; }

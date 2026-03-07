@@ -1,75 +1,96 @@
-# RevitaVibe Montgomery — AI Civic Land Intelligence Platform
+# RevitaVibe Montgomery
 
-A hackathon MVP civic planning dashboard built on Next.js 15. Transforms the Bright Data hackathon starter into a polished, demoable product for city planners and mayors.
+AI Civic Land Intelligence Platform for Montgomery, Alabama.
 
-## What It Does
+## Overview
 
-Interactive single-page dashboard for Montgomery, AL that identifies vacant land redevelopment opportunities, visualizes infrastructure projects, and answers urban planning questions via an AI Copilot.
+A Next.js 15 civic planning dashboard showing vacant parcels, infrastructure projects, and zoning data for Montgomery, AL, with live Census data integration and AI-powered parcel enrichment.
 
 ## Architecture
 
-- **Framework**: Next.js 15 (App Router) with TypeScript
-- **Map**: Leaflet + custom Leaflet imperative hooks (`app/components/CityMap.tsx`) — dynamically imported with `ssr: false`
-- **Data**: Local JSON sample datasets (20 parcels, 12 infra projects, 8 zones) — swappable with real GIS data
-- **Scoring**: Weighted opportunity score (vacancy 40%, zoning 25%, infra 20%, permit inactivity 15%) in `app/lib/scoring.ts`
-- **Copilot**: Deterministic keyword-matching logic in `app/lib/copilot.ts` — upgrades to OpenAI if `OPENAI_API_KEY` set
-- **MCP**: Bright Data enrichment stub in `app/lib/mcpClient.ts` + `app/lib/enrichment.ts` — activates when `BRIGHTDATA_API_KEY` is set
-- **Port**: 5000 (Replit standard)
+**Framework**: Next.js 15 (App Router) · TypeScript  
+**Map**: Leaflet (client-only, `ssr:false` dynamic import)  
+**Port**: 5000 (0.0.0.0) — configured for Replit
 
-## File Structure
-
+### Component Structure
 ```
 app/
-  page.tsx                        ← Main dashboard (state + layout)
-  layout.tsx                      ← Root layout + metadata
-  globals.css                     ← All dashboard styles
+  page.tsx                  — Dashboard shell, fetches live metrics on load
   components/
-    HeaderBar.tsx                 ← Title bar with Bright Data badge
-    MetricCards.tsx               ← 4 metric summary cards
-    CityMap.tsx                   ← Leaflet map (client-only, ssr:false)
-    LayerControls.tsx             ← Vacancy/Zoning/Infrastructure toggles
-    ParcelDetailPanel.tsx         ← Click-to-open parcel detail + MCP enrich
-    CopilotPanel.tsx              ← AI Copilot with preset questions
-    SummaryPanel.tsx              ← Mayor Redevelopment Summary + export
-  data/
-    vacancy_sample.json           ← 20 Montgomery vacant parcels (MOCK)
-    infrastructure_sample.json    ← 12 infrastructure projects (MOCK)
-    zoning_sample.json            ← 8 zoning areas (MOCK)
-  lib/
-    types.ts                      ← Shared TypeScript interfaces
-    scoring.ts                    ← Opportunity score algorithm
-    copilot.ts                    ← Copilot logic + preset questions
-    mcpClient.ts                  ← Bright Data MCP abstraction
-    enrichment.ts                 ← Parcel enrichment layer
+    HeaderBar.tsx           — Top title bar with live status
+    MetricCards.tsx         — 4 metric cards (live data aware)
+    CityMap.tsx             — Leaflet map (static import, no SSR)
+    LayerControls.tsx       — Layer toggle buttons
+    ParcelDetailPanel.tsx   — Parcel detail + auto-enrichment on click
+    CopilotPanel.tsx        — AI Copilot with 3 preset questions
+    SummaryPanel.tsx        — Mayor summary panel + export
   api/
-    copilot/route.ts              ← POST /api/copilot
-    enrich/route.ts               ← POST /api/enrich (Bright Data MCP)
-    scrape/route.ts               ← Original scrape endpoint (preserved)
+    datasets/route.ts       — Live Census ACS + OSM metrics endpoint
+    enrich/route.ts         — Parcel enrichment (Bright Data → OpenAI → local)
+    copilot/route.ts        — Copilot query handler
+  lib/
+    types.ts                — Shared types (LiveMetrics, EnrichmentResult, etc.)
+    scoring.ts              — Opportunity score logic
+    copilot.ts              — Copilot analysis logic
+    mcpClient.ts            — Bright Data MCP abstraction
+    datasets/
+      census.ts             — US Census ACS 5-Year API (Montgomery County, AL)
+      osm.ts                — OpenStreetMap Overpass API (parks, schools, bus stops)
+      normalize.ts          — Merge all sources into normalized dataset
+      alabamaOpenData.ts    — Alabama Open Data (stub — no public REST API)
+      montgomeryGIS.ts      — Montgomery GIS (stub — no public REST API)
+      transportation.ts     — ALDOT transportation (stub)
+  data/
+    vacancy_sample.json     — 20 curated Montgomery, AL parcels (sample)
+    infrastructure_sample.json — 12 infrastructure projects (sample)
+    zoning_sample.json      — 8 zone areas (sample)
 ```
 
-## Environment Variables (Secrets)
+## Live Data Sources
 
-| Variable | Effect |
-|---|---|
-| `BRIGHTDATA_API_KEY` | Enables live enrichment in parcel panel + Copilot |
-| `BRIGHTDATA_UNLOCKER_ZONE` | Zone name, defaults to `web_unlocker1` |
-| `OPENAI_API_KEY` | (Future) Enable real LLM Copilot responses |
+| Source | Status | Notes |
+|--------|--------|-------|
+| US Census ACS 5-Year 2022 | **LIVE** | No API key needed. Real vacancy/poverty/income for Montgomery County, AL (FIPS 01-101) |
+| OpenStreetMap Overpass API | Fallback | Rate-limited/504 from Replit IP. Graceful fallback enabled |
+| Montgomery, AL Parcels | Sample JSON | No public REST API. 20 curated parcels as primary parcel layer |
+| Alabama Open Data | Stub | Limited machine-readable coverage; documented in code |
+| ALDOT Transportation | Stub | Requires ALDOT GIS Services access |
 
-## Mock vs Live
+## Auto-Enrichment Workflow
 
-| Feature | Status |
-|---|---|
-| Map data (parcels, infra, zones) | MOCK — local JSON |
-| Opportunity scoring | LIVE — computed from data |
-| Copilot responses | MOCK — deterministic keyword logic |
-| Map highlighting from Copilot | LIVE — works now |
-| Parcel click interaction | LIVE — works now |
-| Layer toggles | LIVE — works now |
-| Bright Data enrichment | STUB — activates with API key |
-| Export Summary button | LIVE — downloads JSON |
+```
+User clicks parcel on map
+  → selectedParcel state updates
+  → ParcelDetailPanel renders immediately
+  → useEffect fires on parcel.id change
+  → Calls /api/enrich in background
+  → Loading spinner shown
+  → Returns bullets + citations
+  → Panel updates (no blocking)
+```
 
-## Packages Added
+Enrichment chain (in order of priority):
+1. **Bright Data MCP** (if `BRIGHTDATA_API_KEY` set) — Google search → extract context
+2. **OpenAI** (if `OPENAI_API_KEY` set) — Summarize into bullets with citations
+3. **Local deterministic** — Rich parcel-specific insights with real Montgomery citations
 
-- `leaflet` — map rendering
-- `react-leaflet` — (installed, Leaflet used directly for SSR safety)
-- `@types/leaflet` — TypeScript types
+## Environment Variables
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `BRIGHTDATA_API_KEY` | Optional | Enables live web enrichment via Bright Data |
+| `OPENAI_API_KEY` | Optional | Enables AI summarization of enrichment |
+| `BRIGHTDATA_UNLOCKER_ZONE` | Optional | Defaults to `web_unlocker1` |
+
+## Workflow
+
+**Start application**: `npm run dev` (port 5000, 0.0.0.0)
+
+## Key Design Decisions
+
+- Maryland datasets explicitly excluded (wrong geography — see comment in code)
+- OSM fallback is silent and graceful (504 from Replit IP is expected)
+- Census live data is the primary real-data layer (no auth needed, reliable)
+- Parcel layer stays as curated sample JSON (no public Montgomery GIS REST API exists)
+- All enrichment failures show user-friendly messages, never break the demo
+- Citations always shown with real URLs to montgomeryal.gov, adeca.alabama.gov, data.census.gov, etc.
