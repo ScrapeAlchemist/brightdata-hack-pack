@@ -92,7 +92,7 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
         <div>
           <div className="summary-title">🏛️ Mayor Redevelopment Summary</div>
           <div className="summary-subtitle">
-            {totalVacant} vacant parcels · {highPriority} high priority · Avg score {avgScore}/100
+            {totalVacant} mapped opportunity sites · {highPriority} high priority · Avg score {avgScore}/100
             {censusLive && liveMetrics?.censusPovertyRate
               ? ` · ${(liveMetrics.censusPovertyRate * 100).toFixed(1)}% county poverty rate`
               : ""}

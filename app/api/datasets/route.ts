@@ -41,7 +41,7 @@ export async function GET() {
   const parksIsLive = Array.isArray(parks) && parks.length > 0 && parks[0]?.is_live === true;
 
   const metrics: LiveMetrics = {
-    vacantLots: parcels.length,
+    vacantLots: census?.vacantUnits ?? parcels.length,
     highPriority: parcels.filter((p) => p.priority === "high").length,
     parkGaps: Math.max(
       parcels.filter((p) =>

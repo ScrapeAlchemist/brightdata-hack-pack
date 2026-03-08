@@ -21,8 +21,8 @@ export default function MetricCards({ metrics }: Props) {
       icon: "🏚️",
       color: "#dc2626",
       bg: "#fef2f2",
-      sourceLive: metrics.dataStatus.parcels === "live",
-      sourceLabel: metrics.dataStatus.parcels === "live" ? "live" : "sample",
+      sourceLive: censusLive,
+      sourceLabel: censusLive ? "Census ACS live" : "sample",
     },
     {
       label: "High Priority",
