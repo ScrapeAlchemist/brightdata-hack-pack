@@ -11,6 +11,7 @@ const LAYERS: { id: LayerName; label: string; color: string; icon: string; desc:
   { id: "vacancy", label: "Vacancy / Redevelopment", color: "#dc2626", icon: "🏚️", desc: "Vacant and underused parcels" },
   { id: "zoning", label: "Zoning Compatibility", color: "#7c3aed", icon: "📋", desc: "Land-use zone context" },
   { id: "infrastructure", label: "Infrastructure / Permits", color: "#2563eb", icon: "🔧", desc: "Active projects and upgrades" },
+  { id: "community", label: "Community Need", color: "#ea580c", icon: "⚠️", desc: "Community stress index — computed from permit inactivity + Census poverty data" },
 ];
 
 export default function LayerControls({ activeLayers, onToggle }: Props) {

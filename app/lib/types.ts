@@ -1,5 +1,5 @@
 export type Priority = "high" | "medium" | "low";
-export type LayerName = "vacancy" | "zoning" | "infrastructure";
+export type LayerName = "vacancy" | "zoning" | "infrastructure" | "community";
 export type DataStatus = "live" | "fallback" | "enriched";
 
 export interface VacancyParcel {
@@ -15,11 +15,13 @@ export interface VacancyParcel {
   opportunity_score: number;
   infrastructure_context: string;
   neighborhood: string;
+  community_need_score?: number;
+  community_need_label?: string;
+  community_need_context?: string;
   source?: string;
   sourceType?: string;
   dataset_name?: string;
   citation_url?: string;
-  community_need_context?: string;
   is_live?: boolean;
 }
 
@@ -77,6 +79,17 @@ export interface EnrichmentResult {
   error?: string;
 }
 
+export interface PermitRecord {
+  permitNo: string;
+  issuedDate: string;
+  status: string;
+  type: string;
+  projectType: string;
+  estimatedCost: number;
+  zoning: string;
+  citationUrl: string;
+}
+
 export interface ParcelLookupResult {
   parcelNo: string;
   address: string;
@@ -85,8 +98,11 @@ export interface ParcelLookupResult {
   neighborhood: string;
   assessmentClass: string;
   landUseCode: string;
+  liveZoning: string;
   totalValue: number;
   acreage: number;
+  recentPermits: PermitRecord[];
+  permitCount: number;
   source: string;
   citationUrl: string;
   is_live: boolean;
@@ -108,6 +124,7 @@ export interface LiveMetrics {
   gisPermitCount?: number;
   liveInfrastructure?: InfrastructureItem[];
   liveParks?: ParkItem[];
+  liveParcels?: VacancyParcel[];
   dataStatus: {
     parcels: DataStatus;
     census: DataStatus;
@@ -115,6 +132,7 @@ export interface LiveMetrics {
     infrastructure: DataStatus;
     parks: DataStatus;
     permits: DataStatus;
+    communityNeed: DataStatus;
   };
   censusSource?: string;
   osmSource?: string;

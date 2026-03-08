@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { VacancyParcel, EnrichmentResult, ParcelLookupResult } from "@/app/lib/types";
-import { getScoreColor, getScoreLabel } from "@/app/lib/scoring";
+import { getScoreColor, getScoreLabel, getCommunityNeedColor } from "@/app/lib/scoring";
 
 interface Props {
   parcel: VacancyParcel | null;
@@ -127,6 +127,9 @@ export default function ParcelDetailPanel({ parcel }: Props) {
   const scoreLabel = getScoreLabel(parcel.opportunity_score);
   const priorityColors: Record<string, string> = { high: "#dc2626", medium: "#ea580c", low: "#ca8a04" };
   const pColor = priorityColors[parcel.priority];
+  const needColor = parcel.community_need_score !== undefined
+    ? getCommunityNeedColor(parcel.community_need_score)
+    : "#6b7280";
 
   return (
     <div className="panel parcel-panel">
@@ -167,45 +170,106 @@ export default function ParcelDetailPanel({ parcel }: Props) {
             ) : null}
           </div>
           {cityRecord && (
-            <div className="city-record-grid">
-              <div className="city-field">
-                <div className="field-label">Parcel No</div>
-                <div className="field-value mono">{cityRecord.parcelNo}</div>
-              </div>
-              <div className="city-field">
-                <div className="field-label">Owner</div>
-                <div className="field-value">{cityRecord.owner || "—"}</div>
-              </div>
-              <div className="city-field">
-                <div className="field-label">Assessed Value</div>
-                <div className="field-value" style={{ color: "#0d9488", fontWeight: 600 }}>
-                  {cityRecord.totalValue > 0
-                    ? `$${cityRecord.totalValue.toLocaleString()}`
-                    : "—"}
+            <>
+              <div className="city-record-grid">
+                <div className="city-field">
+                  <div className="field-label">Parcel No</div>
+                  <div className="field-value mono">{cityRecord.parcelNo}</div>
+                </div>
+                <div className="city-field">
+                  <div className="field-label">Owner</div>
+                  <div className="field-value">{cityRecord.owner || "—"}</div>
+                </div>
+                <div className="city-field">
+                  <div className="field-label">Assessed Value</div>
+                  <div className="field-value" style={{ color: "#0d9488", fontWeight: 600 }}>
+                    {cityRecord.totalValue > 0
+                      ? `$${cityRecord.totalValue.toLocaleString()}`
+                      : "—"}
+                  </div>
+                </div>
+                <div className="city-field">
+                  <div className="field-label">Land Use Code</div>
+                  <div className="field-value">{cityRecord.landUseCode || "—"}</div>
+                </div>
+                {cityRecord.liveZoning && (
+                  <div className="city-field">
+                    <div className="field-label">
+                      Zoning District
+                      <span className="live-mini-badge">🟢 live</span>
+                    </div>
+                    <div className="field-value" style={{ color: "#7c3aed", fontWeight: 600 }}>
+                      {cityRecord.liveZoning}
+                    </div>
+                  </div>
+                )}
+                {cityRecord.acreage > 0 && (
+                  <div className="city-field">
+                    <div className="field-label">Acreage</div>
+                    <div className="field-value">{cityRecord.acreage.toFixed(2)} ac</div>
+                  </div>
+                )}
+                {cityRecord.neighborhood && (
+                  <div className="city-field">
+                    <div className="field-label">Neighborhood</div>
+                    <div className="field-value">{cityRecord.neighborhood}</div>
+                  </div>
+                )}
+                <div className="city-record-citation" style={{ gridColumn: "1 / -1" }}>
+                  <a href={cityRecord.citationUrl} target="_blank" rel="noopener noreferrer">
+                    📎 Montgomery City Assessor — Parcels_Owner
+                  </a>
+                  {cityRecord.liveZoning && (
+                    <>
+                      {" · "}
+                      <a href="https://services7.arcgis.com/xNUwUjOJqYE54USz/arcgis/rest/services/Building_Permit_viewlayer/FeatureServer" target="_blank" rel="noopener noreferrer">
+                        Zoning from Building Permits
+                      </a>
+                    </>
+                  )}
                 </div>
               </div>
-              <div className="city-field">
-                <div className="field-label">Land Use</div>
-                <div className="field-value">{cityRecord.landUseCode || "—"}</div>
-              </div>
-              {cityRecord.acreage > 0 && (
-                <div className="city-field">
-                  <div className="field-label">Acreage</div>
-                  <div className="field-value">{cityRecord.acreage.toFixed(2)} ac</div>
+
+              {cityRecord.recentPermits && cityRecord.recentPermits.length > 0 && (
+                <div className="permit-history-block">
+                  <div className="permit-history-header">
+                    <span>🗂️ Recent Permits</span>
+                    <span className="data-badge" style={{ background: "#16a34a20", color: "#16a34a" }}>🟢 live</span>
+                  </div>
+                  <table className="permit-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Est. Cost</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cityRecord.recentPermits.slice(0, 5).map((p, i) => (
+                        <tr key={i}>
+                          <td>{p.issuedDate}</td>
+                          <td>{p.projectType || p.type}</td>
+                          <td className={`permit-status permit-status-${p.status.toLowerCase().replace(/\s/g, "-")}`}>
+                            {p.status}
+                          </td>
+                          <td>
+                            {p.estimatedCost > 0
+                              ? `$${p.estimatedCost.toLocaleString()}`
+                              : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="city-record-citation">
+                    <a href="https://services7.arcgis.com/xNUwUjOJqYE54USz/arcgis/rest/services/Building_Permit_viewlayer/FeatureServer" target="_blank" rel="noopener noreferrer">
+                      📎 Montgomery City Building Permits — FeatureServer
+                    </a>
+                  </div>
                 </div>
               )}
-              {cityRecord.neighborhood && (
-                <div className="city-field">
-                  <div className="field-label">Neighborhood</div>
-                  <div className="field-value">{cityRecord.neighborhood}</div>
-                </div>
-              )}
-              <div className="city-record-citation" style={{ gridColumn: "1 / -1" }}>
-                <a href={cityRecord.citationUrl} target="_blank" rel="noopener noreferrer">
-                  📎 Montgomery City Assessor — Parcels_Owner
-                </a>
-              </div>
-            </div>
+            </>
           )}
         </div>
       )}
@@ -222,10 +286,32 @@ export default function ParcelDetailPanel({ parcel }: Props) {
         </div>
       </div>
 
+      {parcel.community_need_score !== undefined && (
+        <div className="need-score-row">
+          <div className="need-score-label">
+            <span>⚠️ Community Need</span>
+            <span className="need-score-source">Census + Permits</span>
+          </div>
+          <div className="need-score-bar-bg">
+            <div
+              className="need-score-bar-fill"
+              style={{ width: `${parcel.community_need_score}%`, background: needColor }}
+            />
+          </div>
+          <div className="need-score-value" style={{ color: needColor }}>
+            {parcel.community_need_score}/100 — {parcel.community_need_label}
+          </div>
+        </div>
+      )}
+
       <div className="parcel-grid">
         <div className="parcel-field">
           <div className="field-label">Zoning</div>
-          <div className="field-value">{parcel.zoning}</div>
+          <div className="field-value">
+            {cityRecord?.liveZoning
+              ? <span style={{ color: "#7c3aed", fontWeight: 600 }}>{cityRecord.liveZoning} <span style={{ fontSize: "10px", color: "#16a34a" }}>live</span></span>
+              : parcel.zoning}
+          </div>
         </div>
         <div className="parcel-field">
           <div className="field-label">Permit Inactivity</div>
@@ -245,7 +331,7 @@ export default function ParcelDetailPanel({ parcel }: Props) {
         </div>
         {parcel.community_need_context && (
           <div className="parcel-field" style={{ gridColumn: "1 / -1" }}>
-            <div className="field-label">Community Context</div>
+            <div className="field-label">Community Need Context</div>
             <div className="field-value" style={{ fontSize: "11px", color: "#475569" }}>
               {parcel.community_need_context}
             </div>

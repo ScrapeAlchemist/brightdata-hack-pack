@@ -1,38 +1,13 @@
-import type { InfrastructureItem } from "@/app/lib/types";
+import type { InfrastructureItem, ParcelLookupResult, PermitRecord, ParkItem } from "@/app/lib/types";
+import { cacheGet, cacheSet, TTL } from "@/app/lib/cache";
 
 const ORG = "xNUwUjOJqYE54USz";
 const BASE = `https://services7.arcgis.com/${ORG}/arcgis/rest/services`;
 
-const CITATION_INFRA = "https://services7.arcgis.com/xNUwUjOJqYE54USz/arcgis/rest/services/INFRASTRUCTURE_IMPROVEMENT_PROJECTS/FeatureServer";
-const CITATION_PARKS = "https://services7.arcgis.com/xNUwUjOJqYE54USz/arcgis/rest/services/Park_and_Trail/FeatureServer";
-
-export interface ParkItem {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  address: string;
-  facilityType: string;
-  operDays: string;
-  source: string;
-  citation: string;
-  is_live: boolean;
-}
-
-export interface ParcelLookupResult {
-  parcelNo: string;
-  address: string;
-  city: string;
-  owner: string;
-  neighborhood: string;
-  assessmentClass: string;
-  landUseCode: string;
-  totalValue: number;
-  acreage: number;
-  source: string;
-  citationUrl: string;
-  is_live: boolean;
-}
+const CITATION_INFRA = `${BASE}/INFRASTRUCTURE_IMPROVEMENT_PROJECTS/FeatureServer`;
+const CITATION_PARKS = `${BASE}/Park_and_Trail/FeatureServer`;
+const CITATION_PERMITS = `${BASE}/Building_Permit_viewlayer/FeatureServer`;
+const CITATION_PARCELS = `${BASE}/Parcels_Owner/FeatureServer`;
 
 function normalizeStatus(raw: string): "active" | "planned" | "completed" {
   const s = (raw ?? "").toUpperCase().trim();
@@ -52,6 +27,10 @@ function toTitleCase(str: string): string {
 }
 
 export async function fetchLiveInfrastructureProjects(): Promise<InfrastructureItem[]> {
+  const cacheKey = "gis_infrastructure";
+  const cached = cacheGet<InfrastructureItem[]>(cacheKey);
+  if (cached) return cached;
+
   const url =
     `${BASE}/INFRASTRUCTURE_IMPROVEMENT_PROJECTS/FeatureServer/0/query` +
     `?where=1%3D1` +
@@ -63,7 +42,6 @@ export async function fetchLiveInfrastructureProjects(): Promise<InfrastructureI
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(10000),
     });
     if (!res.ok) throw new Error(`GIS HTTP ${res.status}`);
@@ -97,6 +75,7 @@ export async function fetchLiveInfrastructureProjects(): Promise<InfrastructureI
       });
     }
 
+    cacheSet(cacheKey, items, TTL.INFRASTRUCTURE);
     return items;
   } catch (err) {
     console.warn("fetchLiveInfrastructureProjects failed:", err);
@@ -105,6 +84,10 @@ export async function fetchLiveInfrastructureProjects(): Promise<InfrastructureI
 }
 
 export async function fetchLiveParks(): Promise<ParkItem[]> {
+  const cacheKey = "gis_parks";
+  const cached = cacheGet<ParkItem[]>(cacheKey);
+  if (cached) return cached;
+
   const url =
     `${BASE}/Park_and_Trail/FeatureServer/0/query` +
     `?where=1%3D1` +
@@ -116,7 +99,6 @@ export async function fetchLiveParks(): Promise<ParkItem[]> {
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(10000),
     });
     if (!res.ok) throw new Error(`GIS Parks HTTP ${res.status}`);
@@ -166,6 +148,7 @@ export async function fetchLiveParks(): Promise<ParkItem[]> {
       });
     }
 
+    cacheSet(cacheKey, parks, TTL.PARKS);
     return parks;
   } catch (err) {
     console.warn("fetchLiveParks failed:", err);
@@ -173,7 +156,65 @@ export async function fetchLiveParks(): Promise<ParkItem[]> {
   }
 }
 
+export async function fetchPermitsByParcelNo(parcelNo: string): Promise<{ zoning: string; permits: PermitRecord[]; count: number }> {
+  if (!parcelNo) return { zoning: "", permits: [], count: 0 };
+
+  const cacheKey = `permits_parcel_${parcelNo}`;
+  const cached = cacheGet<{ zoning: string; permits: PermitRecord[]; count: number }>(cacheKey);
+  if (cached) return cached;
+
+  const where = encodeURIComponent(`ParcelNo='${parcelNo}'`);
+  const url =
+    `${BASE}/Building_Permit_viewlayer/FeatureServer/0/query` +
+    `?where=${where}` +
+    `&outFields=PermitNo,IssuedDate,PermitStatus,PermitCode,ProjectType,EstimatedCost,Zoning` +
+    `&orderByFields=IssuedDate+DESC` +
+    `&resultRecordCount=6` +
+    `&f=json`;
+
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error(`Permits HTTP ${res.status}`);
+
+    const data = await res.json();
+    if (data.error) throw new Error(`Permits error: ${data.error.message}`);
+
+    const features = data.features ?? [];
+    let zoningCode = "";
+
+    const permits: PermitRecord[] = features.map((f: { attributes: Record<string, unknown> }) => {
+      const a = f.attributes;
+      if (!zoningCode && a.Zoning) zoningCode = String(a.Zoning);
+      const issuedMs = typeof a.IssuedDate === "number" ? a.IssuedDate : null;
+      const issuedDate = issuedMs
+        ? new Date(issuedMs).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+        : "Unknown";
+      return {
+        permitNo: String(a.PermitNo ?? ""),
+        issuedDate,
+        status: String(a.PermitStatus ?? ""),
+        type: String(a.PermitCode ?? ""),
+        projectType: String(a.ProjectType ?? ""),
+        estimatedCost: typeof a.EstimatedCost === "number" ? a.EstimatedCost : 0,
+        zoning: String(a.Zoning ?? ""),
+        citationUrl: CITATION_PERMITS,
+      };
+    });
+
+    const result = { zoning: zoningCode, permits, count: features.length };
+    cacheSet(cacheKey, result, TTL.PARCEL_LOOKUP);
+    return result;
+  } catch (err) {
+    console.warn("fetchPermitsByParcelNo failed:", err);
+    return { zoning: "", permits: [], count: 0 };
+  }
+}
+
 export async function lookupParcelByAddress(address: string): Promise<ParcelLookupResult | null> {
+  const cacheKey = `parcel_lookup_${address.toLowerCase().trim()}`;
+  const cached = cacheGet<ParcelLookupResult>(cacheKey);
+  if (cached) return cached;
+
   const keywords = address
     .toUpperCase()
     .replace(/[,\.]/g, " ")
@@ -196,9 +237,7 @@ export async function lookupParcelByAddress(address: string): Promise<ParcelLook
     `&f=json`;
 
   try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(8000),
-    });
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error(`Parcels HTTP ${res.status}`);
 
     const data = await res.json();
@@ -206,20 +245,30 @@ export async function lookupParcelByAddress(address: string): Promise<ParcelLook
     if (!f) return null;
 
     const a = f.attributes;
-    return {
-      parcelNo: (a.ParcelNo ?? "").trim(),
+    const parcelNo = (a.ParcelNo ?? "").trim();
+
+    const permitData = await fetchPermitsByParcelNo(parcelNo);
+
+    const result: ParcelLookupResult = {
+      parcelNo,
       address: (a.PropertyAddr1 ?? "").trim(),
       city: (a.PropertyCity ?? "Montgomery").trim(),
       owner: (a.OwnerName ?? "").trim(),
       neighborhood: (a.Neighborhood ?? "").trim(),
       assessmentClass: (a.AssessmentClass ?? "").trim(),
       landUseCode: (a.LandUseCode ?? "").trim(),
+      liveZoning: permitData.zoning,
       totalValue: a.TotalValue ?? 0,
       acreage: a.Calc_Acre ?? 0,
+      recentPermits: permitData.permits,
+      permitCount: permitData.count,
       source: "Montgomery, AL City Assessor — Parcels_Owner (live)",
-      citationUrl: `${BASE}/Parcels_Owner/FeatureServer`,
+      citationUrl: CITATION_PARCELS,
       is_live: true,
     };
+
+    cacheSet(cacheKey, result, TTL.PARCEL_LOOKUP);
+    return result;
   } catch (err) {
     console.warn("lookupParcelByAddress failed:", err);
     return null;

@@ -1,5 +1,8 @@
+import { cacheGet, cacheSet, TTL } from "@/app/lib/cache";
+
 const ORG = "xNUwUjOJqYE54USz";
 const BASE = `https://services7.arcgis.com/${ORG}/arcgis/rest/services`;
+const CACHE_KEY = "permits_count_montgomery";
 
 export interface PermitStats {
   total: number;
@@ -10,6 +13,9 @@ export interface PermitStats {
 }
 
 export async function fetchBuildingPermitStats(): Promise<PermitStats> {
+  const cached = cacheGet<PermitStats>(CACHE_KEY);
+  if (cached) return cached;
+
   const url =
     `${BASE}/Building_Permit_viewlayer/FeatureServer/0/query` +
     `?where=1%3D1` +
@@ -18,7 +24,6 @@ export async function fetchBuildingPermitStats(): Promise<PermitStats> {
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 900 },
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) throw new Error(`Permits HTTP ${res.status}`);
@@ -28,13 +33,16 @@ export async function fetchBuildingPermitStats(): Promise<PermitStats> {
 
     const total = data.features?.[0]?.attributes?.total ?? 0;
 
-    return {
+    const result: PermitStats = {
       total,
       isLive: true,
       source: "Montgomery, AL Building Permits (live)",
       citationUrl: `${BASE}/Building_Permit_viewlayer/FeatureServer`,
       fetchedAt: new Date().toISOString(),
     };
+
+    cacheSet(CACHE_KEY, result, TTL.PERMITS);
+    return result;
   } catch (err) {
     console.warn("fetchBuildingPermitStats failed:", err);
     return {

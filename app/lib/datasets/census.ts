@@ -1,6 +1,9 @@
+import { cacheGet, cacheSet, TTL } from "@/app/lib/cache";
+
 const CENSUS_BASE = "https://api.census.gov/data/2022/acs/acs5";
 const STATE_FIPS = "01";
 const COUNTY_FIPS = "101";
+const CACHE_KEY = "census_montgomery";
 
 export interface CensusMetrics {
   totalHousingUnits: number;
@@ -33,6 +36,9 @@ const CENSUS_FALLBACK: CensusMetrics = {
 };
 
 export async function fetchMontgomeryMetrics(): Promise<CensusMetrics> {
+  const cached = cacheGet<CensusMetrics>(CACHE_KEY);
+  if (cached) return cached;
+
   const vars = [
     "B25002_001E",
     "B25002_003E",
@@ -46,7 +52,6 @@ export async function fetchMontgomeryMetrics(): Promise<CensusMetrics> {
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(8000),
     });
 
@@ -67,7 +72,7 @@ export async function fetchMontgomeryMetrics(): Promise<CensusMetrics> {
     const medianIncome = parseInt(obj["B19013_001E"]) || 0;
     const population = parseInt(obj["B01003_001E"]) || 0;
 
-    return {
+    const result: CensusMetrics = {
       totalHousingUnits,
       vacantUnits,
       vacancyRate: totalHousingUnits > 0 ? vacantUnits / totalHousingUnits : 0,
@@ -81,6 +86,9 @@ export async function fetchMontgomeryMetrics(): Promise<CensusMetrics> {
       isLive: true,
       fetchedAt: new Date().toISOString(),
     };
+
+    cacheSet(CACHE_KEY, result, TTL.CENSUS);
+    return result;
   } catch (err) {
     console.warn("Census API unavailable, using fallback:", err);
     return CENSUS_FALLBACK;

@@ -1,5 +1,8 @@
+import { cacheGet, cacheSet, TTL } from "@/app/lib/cache";
+
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const MONTGOMERY_BBOX = "32.27,-86.42,32.50,-86.15";
+const CACHE_KEY = "osm_montgomery_amenities";
 
 export interface OsmFeature {
   id: string;
@@ -32,6 +35,9 @@ function featureTypeFromTags(tags: Record<string, string>): OsmFeature["featureT
 }
 
 export async function fetchMontgomeryAmenities(): Promise<OsmSummary> {
+  const cached = cacheGet<OsmSummary>(CACHE_KEY);
+  if (cached) return cached;
+
   const query = `
 [out:json][timeout:30];
 (
@@ -76,7 +82,7 @@ out center 300;
       });
     }
 
-    return {
+    const result: OsmSummary = {
       parks: elements.filter((e) => e.featureType === "park"),
       schools: elements.filter((e) => e.featureType === "school"),
       busStops: elements.filter((e) => e.featureType === "bus_stop"),
@@ -85,6 +91,9 @@ out center 300;
       fetchedAt: new Date().toISOString(),
       source: "OpenStreetMap via Overpass API",
     };
+
+    cacheSet(CACHE_KEY, result, TTL.OSM);
+    return result;
   } catch (err) {
     console.warn("OSM Overpass unavailable, using fallback:", err);
     return {

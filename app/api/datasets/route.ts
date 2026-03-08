@@ -3,6 +3,7 @@ import { fetchMontgomeryMetrics } from "@/app/lib/datasets/census";
 import { fetchMontgomeryAmenities } from "@/app/lib/datasets/osm";
 import { fetchLiveInfrastructureProjects, fetchLiveParks } from "@/app/lib/datasets/montgomeryGIS";
 import { fetchBuildingPermitStats } from "@/app/lib/datasets/permits";
+import { computeCommunityNeedScore, computeOpportunityScore } from "@/app/lib/scoring";
 import vacancyData from "@/app/data/vacancy_sample.json";
 import type { VacancyParcel, LiveMetrics } from "@/app/lib/types";
 
@@ -22,7 +23,19 @@ export async function GET() {
   const parks = parksResult.status === "fulfilled" ? parksResult.value : [];
   const permits = permitsResult.status === "fulfilled" ? permitsResult.value : null;
 
-  const parcels = vacancyData as VacancyParcel[];
+  const povertyRate = census?.povertyRate ?? 0.197;
+
+  const parcels: VacancyParcel[] = (vacancyData as VacancyParcel[]).map((p) => {
+    const need = computeCommunityNeedScore(p, povertyRate);
+    const enriched: VacancyParcel = {
+      ...p,
+      community_need_score: need.score,
+      community_need_label: need.label,
+      community_need_context: need.context,
+    };
+    enriched.opportunity_score = computeOpportunityScore(enriched);
+    return enriched;
+  });
 
   const infraIsLive = Array.isArray(infra) && infra.length > 0 && infra[0]?.is_live === true;
   const parksIsLive = Array.isArray(parks) && parks.length > 0 && parks[0]?.is_live === true;
@@ -50,6 +63,7 @@ export async function GET() {
     gisPermitCount: permits?.total,
     liveInfrastructure: infra,
     liveParks: parks,
+    liveParcels: parcels,
     dataStatus: {
       parcels: "fallback",
       census: census?.isLive ? "live" : "fallback",
@@ -57,6 +71,7 @@ export async function GET() {
       infrastructure: infraIsLive ? "live" : "fallback",
       parks: parksIsLive ? "live" : "fallback",
       permits: permits?.isLive ? "live" : "fallback",
+      communityNeed: census?.isLive ? "live" : "fallback",
     },
     censusSource: census?.source ?? "US Census ACS (unavailable)",
     osmSource: osm?.source ?? "OpenStreetMap (unavailable)",

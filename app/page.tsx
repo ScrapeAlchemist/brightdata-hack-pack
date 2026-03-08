@@ -40,14 +40,10 @@ export default function Dashboard() {
   const [loadingMetrics, setLoadingMetrics] = useState(true);
 
   const fallbackMetrics: LiveMetrics = useMemo(() => ({
-    vacantLots: sampleParcels.length,
-    highPriority: sampleParcels.filter((p) => p.priority === "high").length,
-    parkGaps: sampleParcels.filter((p) =>
-      p.recommended_use.toLowerCase().includes("park") ||
-      p.recommended_use.toLowerCase().includes("garden") ||
-      p.recommended_use.toLowerCase().includes("green")
-    ).length,
-    activePermits: sampleInfra.filter((i) => i.status === "active").length,
+    vacantLots: 20,
+    highPriority: 9,
+    parkGaps: 4,
+    activePermits: 5,
     dataStatus: {
       parcels: "fallback",
       census: "fallback",
@@ -55,8 +51,9 @@ export default function Dashboard() {
       infrastructure: "fallback",
       parks: "fallback",
       permits: "fallback",
+      communityNeed: "fallback",
     },
-    fetchedAt: new Date().toISOString(),
+    fetchedAt: "",
   }), []);
 
   useEffect(() => {
@@ -73,6 +70,11 @@ export default function Dashboard() {
   }, []);
 
   const displayMetrics = liveMetrics ?? fallbackMetrics;
+
+  const displayParcels: VacancyParcel[] =
+    liveMetrics?.liveParcels && liveMetrics.liveParcels.length > 0
+      ? liveMetrics.liveParcels
+      : sampleParcels;
 
   const displayInfra: InfrastructureItem[] =
     liveMetrics?.liveInfrastructure && liveMetrics.liveInfrastructure.length > 0
@@ -99,7 +101,7 @@ export default function Dashboard() {
         <div className="map-column">
           <LayerControls activeLayers={activeLayers} onToggle={toggleLayer} />
           <CityMap
-            parcels={sampleParcels}
+            parcels={displayParcels}
             infrastructure={displayInfra}
             zones={zones}
             parks={displayParks}
@@ -113,14 +115,14 @@ export default function Dashboard() {
         <div className="right-column">
           <ParcelDetailPanel parcel={selectedParcel} />
           <CopilotPanel
-            parcels={sampleParcels}
+            parcels={displayParcels}
             selectedParcel={selectedParcel}
             onHighlight={setHighlightedParcelIds}
           />
         </div>
       </div>
 
-      <SummaryPanel parcels={sampleParcels} liveMetrics={liveMetrics ?? fallbackMetrics} />
+      <SummaryPanel parcels={displayParcels} liveMetrics={liveMetrics ?? fallbackMetrics} />
     </div>
   );
 }

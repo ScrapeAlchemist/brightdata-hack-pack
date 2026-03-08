@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { VacancyParcel, InfrastructureItem, ZoneArea, ParkItem, LayerName } from "@/app/lib/types";
-import { getPriorityColor } from "@/app/lib/scoring";
+import { getPriorityColor, getCommunityNeedColor } from "@/app/lib/scoring";
 
 interface Props {
   parcels: VacancyParcel[];
@@ -82,6 +82,49 @@ export default function CityMap({
     markersRef.current.forEach((m) => map.removeLayer(m));
     markersRef.current = [];
 
+    if (activeLayers.has("community")) {
+      parcels.forEach((parcel) => {
+        const needScore = parcel.community_need_score ?? 0;
+        const color = getCommunityNeedColor(needScore);
+        const needLabel = parcel.community_need_label ?? (needScore >= 65 ? "High" : needScore >= 40 ? "Moderate" : "Low");
+        const isSelected = parcel.id === selectedParcelId;
+        const isHighlighted = highlightedParcelIds.includes(parcel.id);
+        const radius = isHighlighted ? 14 : isSelected ? 12 : 8;
+
+        const marker = L.circleMarker([parcel.lat, parcel.lng], {
+          radius,
+          fillColor: color,
+          color: isHighlighted ? "#fbbf24" : "#ffffff",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.85,
+        });
+
+        marker.bindPopup(
+          L.popup({ maxWidth: 260 }).setContent(`
+            <div style="font-family:system-ui,sans-serif;padding:4px 0">
+              <div style="font-weight:700;font-size:13px;margin-bottom:4px;color:#0f172a">${parcel.name}</div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:6px">${parcel.address}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                <span style="background:${color}20;color:${color};padding:2px 7px;border-radius:99px;font-size:11px;font-weight:600">⚠️ Need: ${needScore}/100 — ${needLabel}</span>
+              </div>
+              <div style="font-size:11px;color:#475569;margin-top:4px;line-height:1.5">${parcel.permit_inactive_years} yrs permit inactivity · ${parcel.neighborhood}</div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:4px">Source: Census ACS + Montgomery Building Permits</div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:2px">Click to open detail panel →</div>
+            </div>
+          `)
+        );
+
+        marker.on("click", () => {
+          onParcelClick(parcel);
+          marker.openPopup();
+        });
+
+        marker.addTo(map);
+        markersRef.current.push(marker);
+      });
+    }
+
     if (activeLayers.has("vacancy")) {
       parcels.forEach((parcel) => {
         const isHighlighted = highlightedParcelIds.includes(parcel.id);
@@ -109,6 +152,7 @@ export default function CityMap({
               </div>
               <div style="font-size:12px;color:#0f172a"><b>Score:</b> ${parcel.opportunity_score}/100</div>
               <div style="font-size:12px;color:#0f172a"><b>→</b> ${parcel.recommended_use}</div>
+              ${parcel.community_need_score !== undefined ? `<div style="font-size:11px;color:#ea580c;margin-top:3px">⚠️ Community Need: ${parcel.community_need_score}/100</div>` : ""}
               <div style="font-size:10px;color:#94a3b8;margin-top:4px">Click to open detail panel →</div>
             </div>
           `)
@@ -202,6 +246,13 @@ export default function CityMap({
     <div className="city-map-wrapper">
       <div ref={containerRef} className="city-map" />
       <div className="map-legend">
+        {activeLayers.has("community") && (
+          <>
+            <div className="legend-item"><span className="legend-dot" style={{ background: "#dc2626" }} />High need</div>
+            <div className="legend-item"><span className="legend-dot" style={{ background: "#f97316" }} />Moderate need</div>
+            <div className="legend-item"><span className="legend-dot" style={{ background: "#eab308" }} />Low need</div>
+          </>
+        )}
         {activeLayers.has("vacancy") && (
           <>
             <div className="legend-item"><span className="legend-dot" style={{ background: "#dc2626" }} />High priority</div>

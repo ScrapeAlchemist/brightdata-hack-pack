@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { VacancyParcel, LiveMetrics } from "@/app/lib/types";
 import { rankParcels, getScoreColor } from "@/app/lib/scoring";
 
@@ -11,16 +11,32 @@ interface Props {
 
 export default function SummaryPanel({ parcels, liveMetrics }: Props) {
   const [exported, setExported] = useState(false);
+  const [fetchedAgoText, setFetchedAgoText] = useState<string | null>(null);
   const top3 = rankParcels(parcels).slice(0, 3);
+
+  useEffect(() => {
+    if (!liveMetrics?.fetchedAt) return;
+    const update = () => {
+      const secs = Math.round((Date.now() - new Date(liveMetrics!.fetchedAt).getTime()) / 1000);
+      setFetchedAgoText(secs < 60 ? `${secs}s` : `${Math.round(secs / 60)}m`);
+    };
+    update();
+    const id = setInterval(update, 10000);
+    return () => clearInterval(id);
+  }, [liveMetrics?.fetchedAt]);
 
   const totalVacant = parcels.length;
   const highPriority = parcels.filter((p) => p.priority === "high").length;
-  const avgScore = Math.round(parcels.reduce((s, p) => s + p.opportunity_score, 0) / parcels.length);
+  const avgScore = parcels.length > 0
+    ? Math.round(parcels.reduce((s, p) => s + p.opportunity_score, 0) / parcels.length)
+    : 0;
 
   const censusLive = liveMetrics?.dataStatus.census === "live";
   const parksLive = liveMetrics?.dataStatus.parks === "live";
   const infraLive = liveMetrics?.dataStatus.infrastructure === "live";
   const permitsLive = liveMetrics?.dataStatus.permits === "live";
+  const needLive = liveMetrics?.dataStatus.communityNeed === "live";
+
 
   function handleExport() {
     const report = {
@@ -32,6 +48,7 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
         infrastructure: liveMetrics?.dataStatus.infrastructure ?? "fallback",
         parks: liveMetrics?.dataStatus.parks ?? "fallback",
         permits: liveMetrics?.dataStatus.permits ?? "fallback",
+        communityNeed: liveMetrics?.dataStatus.communityNeed ?? "fallback",
         censusSource: liveMetrics?.censusSource,
         gisInfraSource: liveMetrics?.gisInfraSource,
         gisParksSource: liveMetrics?.gisParksSource,
@@ -55,6 +72,7 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
         score: p.opportunity_score,
         recommendedUse: p.recommended_use,
         priority: p.priority,
+        communityNeedScore: p.community_need_score,
       })),
     };
     const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
@@ -127,27 +145,32 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
         </div>
       </div>
 
-      <div className="top-opportunities">
-        <div className="top-opp-title">Top 3 Redevelopment Opportunities</div>
-        <div className="opp-cards">
-          {top3.map((parcel, i) => {
-            const scoreColor = getScoreColor(parcel.opportunity_score);
-            return (
-              <div key={parcel.id} className="opp-card">
-                <div className="opp-rank" style={{ background: scoreColor }}>{i + 1}</div>
-                <div className="opp-body">
-                  <div className="opp-name">{parcel.name}</div>
-                  <div className="opp-address">{parcel.address}</div>
-                  <div className="opp-use">→ {parcel.recommended_use}</div>
-                  <div className="opp-score" style={{ color: scoreColor }}>
-                    Score: {parcel.opportunity_score}/100
+      {top3.length > 0 && (
+        <div className="top-opportunities">
+          <div className="top-opp-title">Top 3 Redevelopment Opportunities</div>
+          <div className="opp-cards">
+            {top3.map((parcel, i) => {
+              const scoreColor = getScoreColor(parcel.opportunity_score);
+              return (
+                <div key={parcel.id} className="opp-card">
+                  <div className="opp-rank" style={{ background: scoreColor }}>{i + 1}</div>
+                  <div className="opp-body">
+                    <div className="opp-name">{parcel.name}</div>
+                    <div className="opp-address">{parcel.address}</div>
+                    <div className="opp-use">→ {parcel.recommended_use}</div>
+                    <div className="opp-score" style={{ color: scoreColor }}>
+                      Score: {parcel.opportunity_score}/100
+                      {parcel.community_need_score !== undefined
+                        ? ` · Need: ${parcel.community_need_score}/100`
+                        : ""}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="summary-data-status">
         <div className="data-status-row">
@@ -162,15 +185,19 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
             {parksLive ? "🟢" : "📂"} Parks ({liveMetrics?.gisParkCount ?? 0} live)
           </span>
           <span className={`data-status-val ${permitsLive ? "status-live" : "status-fallback"}`}>
-            {permitsLive ? "🟢" : "📂"} Permits ({liveMetrics?.gisPermitCount ?? 0} total)
+            {permitsLive ? "🟢" : "📂"} Permits ({(liveMetrics?.gisPermitCount ?? 0).toLocaleString()} total)
+          </span>
+          <span className={`data-status-val ${needLive ? "status-live" : "status-fallback"}`}>
+            {needLive ? "🟢" : "📂"} Community Need
           </span>
           <span className="data-status-val status-fallback">
             📂 Parcels: curated sample
           </span>
         </div>
         <div className="summary-footer">
-          Parcels: curated Montgomery, AL sample · Census ACS 2022 (live) · Montgomery City GIS Infrastructure & Parks (live) ·
-          Building Permits (live) · Bright Data MCP enrichment on parcel click · RevitaVibe Montgomery
+          {fetchedAgoText ? `Live data fetched ${fetchedAgoText} ago · ` : ""}
+          Census ACS 2022 (live) · Montgomery City GIS Infrastructure & Parks (live) ·
+          Building Permits (live) · Community Need: Census + Permit Activity · Bright Data MCP enrichment · RevitaVibe Montgomery
         </div>
       </div>
     </div>
