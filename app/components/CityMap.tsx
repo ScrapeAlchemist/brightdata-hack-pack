@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { VacancyParcel, InfrastructureItem, ZoneArea, ParkItem, LayerName } from "@/app/lib/types";
+import type { VacancyParcel, InfrastructureItem, ZoneArea, ParkItem, TransitStop, LayerName } from "@/app/lib/types";
 import { getPriorityColor, getCommunityNeedColor } from "@/app/lib/scoring";
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
   infrastructure: InfrastructureItem[];
   zones: ZoneArea[];
   parks?: ParkItem[];
+  transitStops?: TransitStop[];
   activeLayers: Set<LayerName>;
   selectedParcelId?: string;
   highlightedParcelIds: string[];
@@ -42,6 +43,7 @@ export default function CityMap({
   infrastructure,
   zones,
   parks = [],
+  transitStops = [],
   activeLayers,
   selectedParcelId,
   highlightedParcelIds,
@@ -214,6 +216,26 @@ export default function CityMap({
         marker.addTo(map);
         markersRef.current.push(marker);
       });
+
+      transitStops.forEach((stop) => {
+        const icon = L.divIcon({
+          html: `<div style="background:#0369a1;color:white;width:8px;height:8px;border-radius:50%;border:1.5px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>`,
+          className: "",
+          iconSize: [10, 10],
+          iconAnchor: [5, 5],
+        });
+
+        const marker = L.marker([stop.lat, stop.lng], { icon });
+        marker.bindPopup(`
+          <div style="font-family:system-ui,sans-serif;padding:4px 0">
+            <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px">🚌 ${stop.name}</div>
+            <span style="background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:99px;font-size:11px;font-weight:600">The M Transit Stop</span>
+            <div style="font-size:10px;color:#94a3b8;margin-top:6px">🟢 Montgomery City GIS live · Stop ID: ${stop.stop_id}</div>
+          </div>
+        `);
+        marker.addTo(map);
+        markersRef.current.push(marker);
+      });
     }
 
     if (activeLayers.has("zoning")) {
@@ -240,7 +262,7 @@ export default function CityMap({
         markersRef.current.push(marker);
       });
     }
-  }, [parcels, infrastructure, zones, parks, activeLayers, selectedParcelId, highlightedParcelIds, onParcelClick]);
+  }, [parcels, infrastructure, zones, parks, transitStops, activeLayers, selectedParcelId, highlightedParcelIds, onParcelClick]);
 
   return (
     <div className="city-map-wrapper">
@@ -265,6 +287,9 @@ export default function CityMap({
             <div className="legend-item"><span className="legend-sq" style={{ background: "#2563eb", transform: "rotate(45deg)", display: "inline-block" }} />Infrastructure</div>
             {parks.length > 0 && (
               <div className="legend-item"><span style={{ fontSize: "11px" }}>🌳</span> Parks ({parks.length} live)</div>
+            )}
+            {transitStops.length > 0 && (
+              <div className="legend-item"><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#0369a1", marginRight: 4 }} />Transit ({transitStops.length} stops)</div>
             )}
           </>
         )}

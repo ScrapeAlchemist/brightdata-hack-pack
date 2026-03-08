@@ -52,6 +52,16 @@ export interface ParkItem {
   is_live: boolean;
 }
 
+export interface TransitStop {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  stop_id: string;
+  source: string;
+  is_live: boolean;
+}
+
 export interface ZoneArea {
   id: string;
   name: string;
@@ -90,6 +100,15 @@ export interface PermitRecord {
   citationUrl: string;
 }
 
+export interface CodeViolation {
+  offenceNum: string;
+  caseDate: string;
+  caseType: string;
+  caseStatus: string;
+  lienStatus: string;
+  parcelNo: string;
+}
+
 export interface ParcelLookupResult {
   parcelNo: string;
   address: string;
@@ -103,6 +122,9 @@ export interface ParcelLookupResult {
   acreage: number;
   recentPermits: PermitRecord[];
   permitCount: number;
+  codeViolationsOpen?: number;
+  codeViolationsTotal?: number;
+  recentViolations?: CodeViolation[];
   source: string;
   citationUrl: string;
   is_live: boolean;
@@ -122,8 +144,12 @@ export interface LiveMetrics {
   gisParkCount?: number;
   gisInfraCount?: number;
   gisPermitCount?: number;
+  gisTransitCount?: number;
+  codeViolationsOpen?: number;
+  codeViolationsTotal?: number;
   liveInfrastructure?: InfrastructureItem[];
   liveParks?: ParkItem[];
+  liveTransitStops?: TransitStop[];
   liveParcels?: VacancyParcel[];
   dataStatus: {
     parcels: DataStatus;
@@ -133,6 +159,8 @@ export interface LiveMetrics {
     parks: DataStatus;
     permits: DataStatus;
     communityNeed: DataStatus;
+    transit: DataStatus;
+    codeViolations: DataStatus;
   };
   censusSource?: string;
   osmSource?: string;
@@ -147,4 +175,11 @@ export interface DashboardMetrics {
   highPriority: number;
   parkGaps: number;
   activePermits: number;
+}
+
+export interface CopilotResponse {
+  answer: string;
+  highlightedParcels: string[];
+  reasoning: string;
+  mcpNote: string;
 }

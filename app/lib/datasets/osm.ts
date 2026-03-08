@@ -1,7 +1,7 @@
 import { cacheGet, cacheSet, TTL } from "@/app/lib/cache";
 
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
-const MONTGOMERY_BBOX = "32.27,-86.42,32.50,-86.15";
+const MONTGOMERY_BBOX = "32.27,-86.47,32.52,-86.10";
 const CACHE_KEY = "osm_montgomery_amenities";
 
 export interface OsmFeature {
@@ -89,7 +89,7 @@ out center 300;
       total: elements.length,
       isLive: true,
       fetchedAt: new Date().toISOString(),
-      source: "OpenStreetMap via Overpass API",
+      source: "OpenStreetMap via Overpass API — City of Montgomery, AL",
     };
 
     cacheSet(CACHE_KEY, result, TTL.OSM);

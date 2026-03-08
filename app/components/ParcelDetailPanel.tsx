@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { VacancyParcel, EnrichmentResult, ParcelLookupResult } from "@/app/lib/types";
+import type { VacancyParcel, EnrichmentResult, ParcelLookupResult, CodeViolation } from "@/app/lib/types";
 import { getScoreColor, getScoreLabel, getCommunityNeedColor } from "@/app/lib/scoring";
 
 interface Props {
@@ -269,6 +269,61 @@ export default function ParcelDetailPanel({ parcel }: Props) {
                   </div>
                 </div>
               )}
+
+              {(cityRecord.codeViolationsTotal !== undefined) && (
+                <div className="permit-history-block">
+                  <div className="permit-history-header">
+                    <span>⚠️ Code Violations</span>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                      {cityRecord.codeViolationsOpen !== undefined && cityRecord.codeViolationsOpen > 0 ? (
+                        <span className="data-badge" style={{ background: "#dc262620", color: "#dc2626" }}>
+                          {cityRecord.codeViolationsOpen} open
+                        </span>
+                      ) : cityRecord.codeViolationsTotal === 0 ? (
+                        <span className="data-badge" style={{ background: "#16a34a20", color: "#16a34a" }}>✓ none on record</span>
+                      ) : (
+                        <span className="data-badge" style={{ background: "#f97316" + "20", color: "#f97316" }}>
+                          {cityRecord.codeViolationsTotal} on record
+                        </span>
+                      )}
+                      <span className="data-badge" style={{ background: "#16a34a20", color: "#16a34a" }}>🟢 live</span>
+                    </div>
+                  </div>
+                  {cityRecord.recentViolations && cityRecord.recentViolations.length > 0 ? (
+                    <table className="permit-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Case Type</th>
+                          <th>Status</th>
+                          <th>Lien</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {cityRecord.recentViolations.slice(0, 5).map((v: CodeViolation, i: number) => (
+                          <tr key={i}>
+                            <td>{v.caseDate}</td>
+                            <td>{v.caseType || "—"}</td>
+                            <td className={`permit-status permit-status-${(v.caseStatus || "").toLowerCase().replace(/\s/g, "-")}`}>
+                              {v.caseStatus || "—"}
+                            </td>
+                            <td>{v.lienStatus || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : cityRecord.codeViolationsTotal === 0 ? (
+                    <div style={{ fontSize: "12px", color: "#64748b", padding: "6px 0" }}>
+                      No code violations found for this parcel.
+                    </div>
+                  ) : null}
+                  <div className="city-record-citation">
+                    <a href="https://services7.arcgis.com/xNUwUjOJqYE54USz/arcgis/rest/services/Code_Violations_view/FeatureServer" target="_blank" rel="noopener noreferrer">
+                      📎 Montgomery City Code Violations — FeatureServer
+                    </a>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -290,7 +345,7 @@ export default function ParcelDetailPanel({ parcel }: Props) {
         <div className="need-score-row">
           <div className="need-score-label">
             <span>⚠️ Community Need</span>
-            <span className="need-score-source">Census + Permits</span>
+            <span className="need-score-source">Census + Permits + Code Violations</span>
           </div>
           <div className="need-score-bar-bg">
             <div

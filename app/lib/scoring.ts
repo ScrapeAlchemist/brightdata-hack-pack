@@ -8,7 +8,7 @@ export interface CommunityNeedResult {
 
 export function computeCommunityNeedScore(
   parcel: Pick<VacancyParcel, "permit_inactive_years" | "priority" | "infrastructure_context">,
-  povertyRate: number = 0.197
+  povertyRate: number = 0.212
 ): CommunityNeedResult {
   const inactivityScore =
     parcel.permit_inactive_years >= 10 ? 40 :
@@ -33,9 +33,9 @@ export function computeCommunityNeedScore(
   const context =
     `Community need score ${score}/100 (${label}). ` +
     `Based on: ${parcel.permit_inactive_years} years permit inactivity, ` +
-    `Montgomery County poverty rate ${povertyPct}% (Census ACS), ` +
+    `City of Montgomery poverty rate ${povertyPct}% (Census ACS), ` +
     `${parcel.priority} redevelopment priority. ` +
-    `Source: U.S. Census ACS 2022 + Montgomery City Building Permits.`;
+    `Source: U.S. Census ACS 2022 (City of Montgomery) + Montgomery City Building Permits.`;
 
   return { score, label, context };
 }

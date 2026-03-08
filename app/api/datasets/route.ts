@@ -1,20 +1,22 @@
 import { NextResponse } from "next/server";
 import { fetchMontgomeryMetrics } from "@/app/lib/datasets/census";
 import { fetchMontgomeryAmenities } from "@/app/lib/datasets/osm";
-import { fetchLiveInfrastructureProjects, fetchLiveParks } from "@/app/lib/datasets/montgomeryGIS";
+import { fetchLiveInfrastructureProjects, fetchLiveParks, fetchLiveTransitStops, fetchCodeViolationStats } from "@/app/lib/datasets/montgomeryGIS";
 import { fetchBuildingPermitStats } from "@/app/lib/datasets/permits";
 import { computeCommunityNeedScore, computeOpportunityScore } from "@/app/lib/scoring";
 import vacancyData from "@/app/data/vacancy_sample.json";
 import type { VacancyParcel, LiveMetrics } from "@/app/lib/types";
 
 export async function GET() {
-  const [censusResult, osmResult, infraResult, parksResult, permitsResult] =
+  const [censusResult, osmResult, infraResult, parksResult, permitsResult, transitResult, violationsResult] =
     await Promise.allSettled([
       fetchMontgomeryMetrics(),
       fetchMontgomeryAmenities(),
       fetchLiveInfrastructureProjects(),
       fetchLiveParks(),
       fetchBuildingPermitStats(),
+      fetchLiveTransitStops(),
+      fetchCodeViolationStats(),
     ]);
 
   const census = censusResult.status === "fulfilled" ? censusResult.value : null;
@@ -22,8 +24,10 @@ export async function GET() {
   const infra = infraResult.status === "fulfilled" ? infraResult.value : [];
   const parks = parksResult.status === "fulfilled" ? parksResult.value : [];
   const permits = permitsResult.status === "fulfilled" ? permitsResult.value : null;
+  const transit = transitResult.status === "fulfilled" ? transitResult.value : [];
+  const violations = violationsResult.status === "fulfilled" ? violationsResult.value : null;
 
-  const povertyRate = census?.povertyRate ?? 0.197;
+  const povertyRate = census?.povertyRate ?? 0.212;
 
   const parcels: VacancyParcel[] = (vacancyData as VacancyParcel[]).map((p) => {
     const need = computeCommunityNeedScore(p, povertyRate);
@@ -39,6 +43,7 @@ export async function GET() {
 
   const infraIsLive = Array.isArray(infra) && infra.length > 0 && infra[0]?.is_live === true;
   const parksIsLive = Array.isArray(parks) && parks.length > 0 && parks[0]?.is_live === true;
+  const transitIsLive = Array.isArray(transit) && transit.length > 0 && transit[0]?.is_live === true;
 
   const metrics: LiveMetrics = {
     vacantLots: census?.vacantUnits ?? parcels.length,
@@ -61,8 +66,12 @@ export async function GET() {
     gisParkCount: parks.length,
     gisInfraCount: infra.length,
     gisPermitCount: permits?.total,
+    gisTransitCount: transit.length,
+    codeViolationsOpen: violations?.open,
+    codeViolationsTotal: violations?.total,
     liveInfrastructure: infra,
     liveParks: parks,
+    liveTransitStops: transit,
     liveParcels: parcels,
     dataStatus: {
       parcels: "fallback",
@@ -72,6 +81,8 @@ export async function GET() {
       parks: parksIsLive ? "live" : "fallback",
       permits: permits?.isLive ? "live" : "fallback",
       communityNeed: census?.isLive ? "live" : "fallback",
+      transit: transitIsLive ? "live" : "fallback",
+      codeViolations: violations?.isLive ? "live" : "fallback",
     },
     censusSource: census?.source ?? "US Census ACS (unavailable)",
     osmSource: osm?.source ?? "OpenStreetMap (unavailable)",

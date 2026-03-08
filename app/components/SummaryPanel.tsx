@@ -36,6 +36,8 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
   const infraLive = liveMetrics?.dataStatus.infrastructure === "live";
   const permitsLive = liveMetrics?.dataStatus.permits === "live";
   const needLive = liveMetrics?.dataStatus.communityNeed === "live";
+  const transitLive = liveMetrics?.dataStatus.transit === "live";
+  const violationsLive = liveMetrics?.dataStatus.codeViolations === "live";
 
 
   function handleExport() {
@@ -190,13 +192,19 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
           <span className={`data-status-val ${needLive ? "status-live" : "status-fallback"}`}>
             {needLive ? "🟢" : "📂"} Community Need
           </span>
+          <span className={`data-status-val ${transitLive ? "status-live" : "status-fallback"}`}>
+            {transitLive ? "🟢" : "📂"} Transit ({liveMetrics?.gisTransitCount ?? 0} stops)
+          </span>
+          <span className={`data-status-val ${violationsLive ? "status-live" : "status-fallback"}`}>
+            {violationsLive ? "🟢" : "📂"} Code Violations ({(liveMetrics?.codeViolationsOpen ?? 0).toLocaleString()} open)
+          </span>
           <span className="data-status-val status-fallback">
             📂 Parcels: curated sample
           </span>
         </div>
         <div className="summary-footer">
           {fetchedAgoText ? `Live data fetched ${fetchedAgoText} ago · ` : ""}
-          Census ACS 2022 (live) · Montgomery City GIS Infrastructure & Parks (live) ·
+          Census ACS 2022 (live) · Montgomery City GIS Infrastructure, Parks, Transit &amp; Code Violations (live) ·
           Building Permits (live) · Community Need: Census + Permit Activity · Bright Data MCP enrichment · RevitaVibe Montgomery
         </div>
       </div>

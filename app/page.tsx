@@ -8,7 +8,7 @@ import LayerControls from "@/app/components/LayerControls";
 import ParcelDetailPanel from "@/app/components/ParcelDetailPanel";
 import CopilotPanel from "@/app/components/CopilotPanel";
 import SummaryPanel from "@/app/components/SummaryPanel";
-import type { VacancyParcel, InfrastructureItem, ZoneArea, ParkItem, LayerName, LiveMetrics } from "@/app/lib/types";
+import type { VacancyParcel, InfrastructureItem, ZoneArea, ParkItem, TransitStop, LayerName, LiveMetrics } from "@/app/lib/types";
 
 import vacancyRaw from "@/app/data/vacancy_sample.json";
 import infraRaw from "@/app/data/infrastructure_sample.json";
@@ -52,6 +52,8 @@ export default function Dashboard() {
       parks: "fallback",
       permits: "fallback",
       communityNeed: "fallback",
+      transit: "fallback",
+      codeViolations: "fallback",
     },
     fetchedAt: "",
   }), []);
@@ -82,6 +84,7 @@ export default function Dashboard() {
       : sampleInfra;
 
   const displayParks: ParkItem[] = liveMetrics?.liveParks ?? [];
+  const displayTransit: TransitStop[] = liveMetrics?.liveTransitStops ?? [];
 
   function toggleLayer(layer: LayerName) {
     setActiveLayers((prev) => {
@@ -105,6 +108,7 @@ export default function Dashboard() {
             infrastructure={displayInfra}
             zones={zones}
             parks={displayParks}
+            transitStops={displayTransit}
             activeLayers={activeLayers}
             selectedParcelId={selectedParcel?.id}
             highlightedParcelIds={highlightedParcelIds}

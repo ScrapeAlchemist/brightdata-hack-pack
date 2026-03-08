@@ -38,7 +38,7 @@ function buildQuery(parcel: ParcelContext): string {
 const REAL_CITATIONS: CitationItem[] = [
   { title: "Montgomery Planning Department", url: "https://www.montgomeryal.gov/community/planning-department", domain: "montgomeryal.gov" },
   { title: "Alabama ADECA — Community Development", url: "https://adeca.alabama.gov/community-development/", domain: "adeca.alabama.gov" },
-  { title: "US Census Bureau — Montgomery County AL", url: "https://data.census.gov/profile/Montgomery_County,_Alabama", domain: "data.census.gov" },
+  { title: "US Census Bureau — City of Montgomery, AL", url: "https://data.census.gov/profile/Montgomery_city,_Alabama", domain: "data.census.gov" },
   { title: "Montgomery Metro Area Development District", url: "https://www.madd.org", domain: "madd.org" },
   { title: "Alabama Power Economic Development", url: "https://www.alabamapower.com/community/economic-development.html", domain: "alabamapower.com" },
   { title: "HUD Opportunity Zones — Alabama", url: "https://opportunityzones.hud.gov/resources/map", domain: "opportunityzones.hud.gov" },
@@ -74,7 +74,7 @@ function deterministicInsight(parcel: ParcelContext): Omit<EnrichmentResult, "so
     );
   } else if (recUse.toLowerCase().includes("housing") || recUse.toLowerCase().includes("residential")) {
     bullets.push(
-      `${recUse} development at this site is supported by Montgomery's housing need data — Montgomery County's vacancy rate is approximately 14.9% (Census ACS 2022), with demand concentrated in affordable and workforce housing segments.`
+      `${recUse} development at this site is supported by Montgomery's housing need data — City of Montgomery's vacancy rate is approximately 15.2% (Census ACS 2022), with demand concentrated in affordable and workforce housing segments.`
     );
   } else if (recUse.toLowerCase().includes("mixed") || recUse.toLowerCase().includes("commercial")) {
     bullets.push(
@@ -97,7 +97,7 @@ function deterministicInsight(parcel: ParcelContext): Omit<EnrichmentResult, "so
   }
 
   bullets.push(
-    `Montgomery County poverty rate is ~19.7% (Census ACS 2022), with median household income of ~$48,200. Projects prioritizing workforce housing, accessible parks, or essential services in this area qualify for ADECA community development grants.`
+    `City of Montgomery poverty rate is ~21.2% (Census ACS 2022), with median household income of ~$54,166. Projects prioritizing workforce housing, accessible parks, or essential services in this area qualify for ADECA community development grants.`
   );
 
   const pickedCitations = [

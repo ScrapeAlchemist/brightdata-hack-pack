@@ -50,7 +50,7 @@ export function answerQuestion(
       reasoning:
         "Composite score: 40% vacancy/underuse, 25% zoning compatibility, 20% infrastructure readiness, 15% permit inactivity.",
       mcpNote:
-        "Bright Data MCP: Cross-referenced Montgomery County tax delinquency records and HUD Opportunity Zone designations.",
+        "Bright Data MCP: Cross-referenced City of Montgomery code violation records and HUD Opportunity Zone designations.",
     };
   }
 

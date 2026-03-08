@@ -8,13 +8,14 @@ interface Props {
 
 export default function MetricCards({ metrics }: Props) {
   const censusLive = metrics.dataStatus.census === "live";
-  const permitsLive = metrics.dataStatus.permits === "live";
   const parksLive = metrics.dataStatus.parks === "live";
+  const violationsLive = metrics.dataStatus.codeViolations === "live";
+  const transitLive = metrics.dataStatus.transit === "live";
 
   const cards = [
     {
       label: "Vacant Lots",
-      value: metrics.vacantLots,
+      value: metrics.vacantLots.toLocaleString(),
       sub: censusLive && metrics.censusVacancyRate
         ? `${(metrics.censusVacancyRate * 100).toFixed(1)}% city vacancy rate (Census ACS)`
         : "Parcels with no active permits",
@@ -25,7 +26,7 @@ export default function MetricCards({ metrics }: Props) {
       sourceLabel: censusLive ? "Census ACS live" : "sample",
     },
     {
-      label: "High Priority",
+      label: "High Priority Sites",
       value: metrics.highPriority,
       sub: censusLive && metrics.censusPovertyRate
         ? `${(metrics.censusPovertyRate * 100).toFixed(1)}% city poverty rate · $${metrics.censusMedianIncome?.toLocaleString()} median income`
@@ -40,7 +41,7 @@ export default function MetricCards({ metrics }: Props) {
       label: "Park-Ready Sites",
       value: metrics.parkGaps,
       sub: parksLive && metrics.gisParkCount !== undefined
-        ? `${metrics.gisParkCount} parks mapped · Montgomery City GIS`
+        ? `${metrics.gisParkCount} parks mapped · ${transitLive && metrics.gisTransitCount ? `${metrics.gisTransitCount} transit stops` : "Montgomery City GIS"}`
         : "Sites suitable for parks or greenways",
       icon: "🌳",
       color: "#16a34a",
@@ -49,18 +50,18 @@ export default function MetricCards({ metrics }: Props) {
       sourceLabel: parksLive ? "City GIS live" : "sample",
     },
     {
-      label: "Active Projects",
-      value: permitsLive && metrics.gisPermitCount
-        ? metrics.gisPermitCount
+      label: "Open Code Violations",
+      value: violationsLive && metrics.codeViolationsOpen !== undefined
+        ? metrics.codeViolationsOpen.toLocaleString()
         : metrics.activePermits,
-      sub: permitsLive && metrics.gisInfraCount !== undefined
-        ? `${metrics.gisInfraCount} infra projects · ${metrics.gisPermitCount} building permits`
+      sub: violationsLive && metrics.codeViolationsTotal !== undefined
+        ? `${metrics.codeViolationsTotal.toLocaleString()} total violations · ${metrics.gisInfraCount ?? 0} infra projects`
         : "Infrastructure projects underway",
-      icon: "🔧",
-      color: "#2563eb",
-      bg: "#eff6ff",
-      sourceLive: permitsLive,
-      sourceLabel: permitsLive ? "City GIS live" : "sample",
+      icon: "⚠️",
+      color: "#7c3aed",
+      bg: "#f5f3ff",
+      sourceLive: violationsLive,
+      sourceLabel: violationsLive ? "City GIS live" : "sample",
     },
   ];
 
