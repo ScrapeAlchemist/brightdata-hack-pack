@@ -2,8 +2,8 @@ import { cacheGet, cacheSet, TTL } from "@/app/lib/cache";
 
 const CENSUS_BASE = "https://api.census.gov/data/2022/acs/acs5";
 const STATE_FIPS = "01";
-const COUNTY_FIPS = "101";
-const CACHE_KEY = "census_montgomery";
+const PLACE_FIPS = "51000";
+const CACHE_KEY = "census_montgomery_city";
 
 export interface CensusMetrics {
   totalHousingUnits: number;
@@ -21,16 +21,16 @@ export interface CensusMetrics {
 }
 
 const CENSUS_FALLBACK: CensusMetrics = {
-  totalHousingUnits: 96421,
-  vacantUnits: 14380,
-  vacancyRate: 0.149,
-  povertyPop: 45012,
-  totalPovPop: 228971,
-  povertyRate: 0.197,
-  medianIncome: 48234,
-  population: 228971,
+  totalHousingUnits: 93743,
+  vacantUnits: 14254,
+  vacancyRate: 0.152,
+  povertyPop: 40625,
+  totalPovPop: 192037,
+  povertyRate: 0.212,
+  medianIncome: 54166,
+  population: 199819,
   source: "US Census ACS 5-Year (cached fallback)",
-  citation: "https://data.census.gov/profile/Montgomery_County,_Alabama",
+  citation: "https://data.census.gov/profile/Montgomery_city,_Alabama",
   isLive: false,
   fetchedAt: new Date().toISOString(),
 };
@@ -48,7 +48,7 @@ export async function fetchMontgomeryMetrics(): Promise<CensusMetrics> {
     "B01003_001E",
   ].join(",");
 
-  const url = `${CENSUS_BASE}?get=NAME,${vars}&for=county:${COUNTY_FIPS}&in=state:${STATE_FIPS}`;
+  const url = `${CENSUS_BASE}?get=NAME,${vars}&for=place:${PLACE_FIPS}&in=state:${STATE_FIPS}`;
 
   try {
     const res = await fetch(url, {
@@ -81,7 +81,7 @@ export async function fetchMontgomeryMetrics(): Promise<CensusMetrics> {
       povertyRate: totalPovPop > 0 ? povertyPop / totalPovPop : 0,
       medianIncome,
       population,
-      source: "US Census ACS 5-Year 2022 (live)",
+      source: "US Census ACS 5-Year 2022 — City of Montgomery, AL (live)",
       citation: "https://api.census.gov/data/2022/acs/acs5",
       isLive: true,
       fetchedAt: new Date().toISOString(),

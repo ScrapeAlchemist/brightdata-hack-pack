@@ -16,7 +16,7 @@ export default function MetricCards({ metrics }: Props) {
       label: "Vacant Lots",
       value: metrics.vacantLots,
       sub: censusLive && metrics.censusVacancyRate
-        ? `${(metrics.censusVacancyRate * 100).toFixed(1)}% county vacancy rate (Census ACS)`
+        ? `${(metrics.censusVacancyRate * 100).toFixed(1)}% city vacancy rate (Census ACS)`
         : "Parcels with no active permits",
       icon: "🏚️",
       color: "#dc2626",
@@ -28,7 +28,7 @@ export default function MetricCards({ metrics }: Props) {
       label: "High Priority",
       value: metrics.highPriority,
       sub: censusLive && metrics.censusPovertyRate
-        ? `${(metrics.censusPovertyRate * 100).toFixed(1)}% poverty rate · $${metrics.censusMedianIncome?.toLocaleString()} median income`
+        ? `${(metrics.censusPovertyRate * 100).toFixed(1)}% city poverty rate · $${metrics.censusMedianIncome?.toLocaleString()} median income`
         : "Opportunity score ≥ 75",
       icon: "🎯",
       color: "#ea580c",

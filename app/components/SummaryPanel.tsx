@@ -94,7 +94,7 @@ export default function SummaryPanel({ parcels, liveMetrics }: Props) {
           <div className="summary-subtitle">
             {totalVacant} mapped opportunity sites · {highPriority} high priority · Avg score {avgScore}/100
             {censusLive && liveMetrics?.censusPovertyRate
-              ? ` · ${(liveMetrics.censusPovertyRate * 100).toFixed(1)}% county poverty rate`
+              ? ` · ${(liveMetrics.censusPovertyRate * 100).toFixed(1)}% city poverty rate`
               : ""}
             {infraLive && liveMetrics?.gisInfraCount
               ? ` · ${liveMetrics.gisInfraCount} live infra projects`
